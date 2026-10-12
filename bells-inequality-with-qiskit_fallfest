@@ -1,0 +1,1893 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# The nature of quantum states: hidden variables versus Bell's inequality"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "For this Qiskit in Classrooms module, students must have a working Python environment with the following packages installed:\n",
+    "- `qiskit` v2.1.0 or newer\n",
+    "- `qiskit-ibm-runtime` v0.40.1 or newer\n",
+    "- `qiskit-aer` v0.17.0 or newer\n",
+    "- `qiskit.visualization`\n",
+    "- `numpy`\n",
+    "- `pylatexenc`\n",
+    "\n",
+    "To set up and install the packages above, see the [Install Qiskit](https://quantum.cloud.ibm.com/docs/guides/install-qiskit) guide.\n",
+    "In order to run jobs on real quantum computers, students will need to set up an account with IBM Quantum&reg; by following the steps in the [Set up your IBM Cloud account](https://quantum.cloud.ibm.com/docs/guides/cloud-setup) guide.\n",
+    "\n",
+    "This module was tested and used 12 seconds of QPU time. This is an estimate only. Your actual usage may vary."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Requirement already satisfied: qiskit-ibm-runtime in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (0.50.0)\n",
+      "Requirement already satisfied: qiskit-aer in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (0.17.2)\n",
+      "Requirement already satisfied: numpy in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (2.4.6)\n",
+      "Requirement already satisfied: pylatexenc in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (2.11)\n",
+      "Requirement already satisfied: qc-grader in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (2026.9.29)\n",
+      "Requirement already satisfied: qiskit[visualization] in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (2.5.2)\n",
+      "Requirement already satisfied: scipy>=1.14 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit[visualization]) (1.17.1)\n",
+      "Requirement already satisfied: rustworkx>=0.15.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit[visualization]) (0.18.1)\n",
+      "Requirement already satisfied: dill>=0.3 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit[visualization]) (0.4.1)\n",
+      "Requirement already satisfied: stevedore>=3.0.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit[visualization]) (5.9.1)\n",
+      "Requirement already satisfied: typing-extensions in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit[visualization]) (4.16.0)\n",
+      "Requirement already satisfied: matplotlib>=3.3 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit[visualization]) (3.11.2)\n",
+      "Requirement already satisfied: pydot in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit[visualization]) (4.0.1)\n",
+      "Requirement already satisfied: Pillow>=4.2.1 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit[visualization]) (12.3.0)\n",
+      "Requirement already satisfied: seaborn>=0.9.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit[visualization]) (0.13.2)\n",
+      "Requirement already satisfied: sympy>=1.3 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit[visualization]) (1.14.0)\n",
+      "Requirement already satisfied: requests>=2.32.4 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit-ibm-runtime) (2.34.2)\n",
+      "Requirement already satisfied: requests-ntlm>=1.1.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit-ibm-runtime) (1.3.0)\n",
+      "Requirement already satisfied: urllib3>=2.4.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit-ibm-runtime) (2.8.0)\n",
+      "Requirement already satisfied: python-dateutil>=2.9.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit-ibm-runtime) (2.9.0.post0)\n",
+      "Requirement already satisfied: ibm-platform-services>=0.61.1 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit-ibm-runtime) (0.77.1)\n",
+      "Requirement already satisfied: ibm-quantum-schemas<1,>=0.12.20260921 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit-ibm-runtime) (0.12.20260921)\n",
+      "Requirement already satisfied: pydantic>=2.13.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit-ibm-runtime) (2.14.1)\n",
+      "Requirement already satisfied: pybase64>=1.4.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit-ibm-runtime) (1.5.1)\n",
+      "Requirement already satisfied: samplomatic>=0.21.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit-ibm-runtime) (0.21.0)\n",
+      "Requirement already satisfied: qiskit-mitigation>=0.1.1 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit-ibm-runtime) (0.1.1)\n",
+      "Requirement already satisfied: qiskit_qasm3_import<1.0.0,>=0.6.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from ibm-quantum-schemas<1,>=0.12.20260921->qiskit-ibm-runtime) (0.6.0)\n",
+      "Requirement already satisfied: annotated-types>=0.6.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from pydantic>=2.13.0->qiskit-ibm-runtime) (0.8.0)\n",
+      "Requirement already satisfied: pydantic-core==2.50.1 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from pydantic>=2.13.0->qiskit-ibm-runtime) (2.50.1)\n",
+      "Requirement already satisfied: typing-inspection>=0.4.4 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from pydantic>=2.13.0->qiskit-ibm-runtime) (0.4.4)\n",
+      "Requirement already satisfied: openqasm3<2.0,>=0.4 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from openqasm3[parser]<2.0,>=0.4->qiskit_qasm3_import<1.0.0,>=0.6.0->ibm-quantum-schemas<1,>=0.12.20260921->qiskit-ibm-runtime) (1.0.1)\n",
+      "Requirement already satisfied: antlr4_python3_runtime<4.14,>=4.7 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from openqasm3[parser]<2.0,>=0.4->qiskit_qasm3_import<1.0.0,>=0.6.0->ibm-quantum-schemas<1,>=0.12.20260921->qiskit-ibm-runtime) (4.13.2)\n",
+      "Requirement already satisfied: psutil>=5 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qiskit-aer) (7.2.2)\n",
+      "Requirement already satisfied: moocore in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qc-grader) (0.3.2)\n",
+      "Requirement already satisfied: networkx in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qc-grader) (3.6.1)\n",
+      "Requirement already satisfied: typeguard in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from qc-grader) (4.6.0)\n",
+      "Requirement already satisfied: ibm_cloud_sdk_core<4.0.0,>=3.24.4 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from ibm-platform-services>=0.61.1->qiskit-ibm-runtime) (3.28.0)\n",
+      "Requirement already satisfied: PyJWT<3.0.0,>=2.11.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from ibm_cloud_sdk_core<4.0.0,>=3.24.4->ibm-platform-services>=0.61.1->qiskit-ibm-runtime) (2.15.1)\n",
+      "Requirement already satisfied: six>=1.5 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from python-dateutil>=2.9.0->qiskit-ibm-runtime) (1.17.0)\n",
+      "Requirement already satisfied: charset_normalizer<4,>=2 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from requests>=2.32.4->qiskit-ibm-runtime) (3.5.2)\n",
+      "Requirement already satisfied: idna<4,>=2.5 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from requests>=2.32.4->qiskit-ibm-runtime) (3.20)\n",
+      "Requirement already satisfied: certifi>=2023.5.7 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from requests>=2.32.4->qiskit-ibm-runtime) (2026.7.22)\n",
+      "Requirement already satisfied: contourpy>=1.0.1 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from matplotlib>=3.3->qiskit[visualization]) (1.3.3)\n",
+      "Requirement already satisfied: cycler>=0.10 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from matplotlib>=3.3->qiskit[visualization]) (0.12.1)\n",
+      "Requirement already satisfied: fonttools>=4.28.2 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from matplotlib>=3.3->qiskit[visualization]) (4.66.1)\n",
+      "Requirement already satisfied: kiwisolver>=1.3.1 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from matplotlib>=3.3->qiskit[visualization]) (1.5.1)\n",
+      "Requirement already satisfied: packaging>=20.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from matplotlib>=3.3->qiskit[visualization]) (26.3)\n",
+      "Requirement already satisfied: pyparsing>=3 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from matplotlib>=3.3->qiskit[visualization]) (3.3.3)\n",
+      "Requirement already satisfied: cryptography>=1.3 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from requests-ntlm>=1.1.0->qiskit-ibm-runtime) (50.0.2)\n",
+      "Requirement already satisfied: pyspnego>=0.4.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from requests-ntlm>=1.1.0->qiskit-ibm-runtime) (0.12.4)\n",
+      "Requirement already satisfied: cffi>=2.0.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from cryptography>=1.3->requests-ntlm>=1.1.0->qiskit-ibm-runtime) (2.1.1)\n",
+      "Requirement already satisfied: pycparser in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from cffi>=2.0.0->cryptography>=1.3->requests-ntlm>=1.1.0->qiskit-ibm-runtime) (3.11)\n",
+      "Requirement already satisfied: sspilib>=0.5.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from pyspnego>=0.4.0->requests-ntlm>=1.1.0->qiskit-ibm-runtime) (0.6.0)\n",
+      "Requirement already satisfied: orjson>=3.9.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from samplomatic>=0.21.0->qiskit-ibm-runtime) (3.13.0)\n",
+      "Requirement already satisfied: pandas>=1.2 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from seaborn>=0.9.0->qiskit[visualization]) (3.0.6)\n",
+      "Requirement already satisfied: tzdata in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from pandas>=1.2->seaborn>=0.9.0->qiskit[visualization]) (2026.5)\n",
+      "Requirement already satisfied: mpmath<1.4,>=1.1.0 in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from sympy>=1.3->qiskit[visualization]) (1.3.0)\n",
+      "Requirement already satisfied: platformdirs in C:\\Users\\pravallika malluri\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages (from moocore->qc-grader) (4.13.0)\n",
+      "Note: you may need to restart the kernel to use updated packages.\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Uncomment and modify this line as needed to install dependencies\n",
+    "%pip install --upgrade \"qiskit[visualization]\" qiskit-ibm-runtime qiskit-aer numpy pylatexenc qc-grader"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from qc_grader.challenges.fallfest_2026.bell import (\n",
+    "    grade_bell_ex1, grade_bell_ex2, grade_bell_ex3, grade_bell_ex4,\n",
+    "    grade_bell_ex5, grade_bell_ex6, grade_bell_ex7, grade_bell_ex8,\n",
+    "    grade_bell_ex9, grade_bell_ex10, grade_bell_ex11, grade_bell_ex12,\n",
+    "    grade_bell_ex13, grade_bell_ex14, grade_bell_ex15, grade_bell_ex16,\n",
+    "    grade_bell_ex17, grade_bell_ex18,\n",
+    ")\n",
+    "\n",
+    "from qc_grader.challenges.fallfest_2026 import check_progress"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Watch the module walkthrough by Dr. Katie McCormick below, or click [here](https://www.youtube.com/watch?v=pS69lqCMdy8&list=PLOFEBzvs-Vvrs2fuvsuT039ariYPsua3d&index=4) to watch it on YouTube.\n",
+    "\n",
+    "-------\n",
+    "\n",
+    "\n",
+    "<IBMVideo id=\"134413665\" title=\"Katie McCormick explores Bell's theorem using a real quantum computer. Learn whether quantum mechanics uncertainty is due to yet undiscovered hidden variables, or due to a fundamentally probabilistic nature.\"/>"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Background\n",
+    "\n",
+    "In many calculations throughout quantum mechanics, you start with a known state of a system, and that state is typically known through a measurement. Today we want to answer the question, “What can you say about a particle's state prior to any measurement?” An obvious corollary is, “How can we know, if we're not allowed to measure?”\n",
+    "\n",
+    "This question dates back to the early days of quantum mechanics. Pioneers in the field fell into factions with Einstein and many others saying that a particle is simply in some unknown state prior to measurement.  Others, notably Max Born, and later Niels Bohr made a more radical claim, saying the state of a particle was truly undetermined by nature prior to measurement, not merely unknown to humans. Measurement then probabilistically collapses the particle into a definite state. Einstein, dissatisfied with this explanation, famously quipped at this, \"Gott würfelt nicht,\" which roughly translates into \"God does not play dice.\"\n",
+    "\n",
+    "For decades after this disagreement emerged, many thought it might never be answered, or that it was a matter of perspective. Then, in 1964, John Bell, a physicist from Northern Ireland, wrote a paper in which he explored the statistics of certain experiments that could answer this question definitively. He showed that in a particular test, one arrives at one set of statistics from defined (but unknown) quantum states, and a different set of statistics from quantum states undetermined by nature.\n",
+    "\n",
+    "At that time of Bell's paper, experimental tests of the statistics involved were inaccessible to all but researchers at the very forefront of physics. But today, IBM Quantum has made it possible for students all over the world to use real quantum devices, remotely over the cloud, and for free, to explore the nature of quantum states. This is what you will do today."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Setup of the thought experiment: entanglement of spin\n",
+    "\n",
+    "There are processes in which a particle with no spin decays into two particles that each have spin. Since spin is a kind of angular momentum, the law of conservation of angular momentum would suggest that the two outcoming particles must have spins exactly anti-aligned. Indeed this is experimentally observed.\n",
+    "\n",
+    "An example: a neutral pi meson sometimes decays into a positron and an electron:\n",
+    "$$\\pi^0\\rightarrow e^+ + e^-$$\n",
+    "Don’t worry if you don’t know what those particles are, and don't worry if you know them so well that you know this decay type is relatively unlikely. Just know that if one of the outcoming particles is spin up, the other must be spin down, and vice versa. Of course, there is nothing special about \"up\" and \"down\"; the same antialignment is observed if measurements are made along what we often call $x$ or $y$. This decay is a compelling context for us to consider, because we can sidestep questions about what measurements took place in the past; the positron and electron didn't even exist until the moment of decay.\n",
+    "\n",
+    "We can let $\\pi^0$ mesons decay and watch the deflection of the outcoming particles under the influence of an inhomogeneous magnetic field. An inhomogeneous field used to deflect spins is often called a Stern-Gerlach device, after the researchers who first used it to (accidentally) gather evidence of the existence of quantum mechanical spin. Note that the story here is more complicated than the original experiment since the electron and positron are also charged (unlike the silver atoms in the Stern Gerlach experiment). But we know how charged particles move in a magnetic field, and we can subtract out that effect. In what follows, we will assume the deflections used in our calculations are due to the spin of the particles and not the charge. Consequently, for our purposes it doesn't matter which observer gets the positron and which gets the electron. The experimental setup is something like this:\n",
+    "\n",
+    "<img src=\"https://quantum.cloud.ibm.com/learning/images/modules/quantum-mechanics/bells-inequality-with-qiskit/epr-pic.avif\" alt=\"A diagram of the setup of an EPR experiment. A source sends out one particle to the left and one to the right. They each pass through a Stern-Gerlach device, an inhomogeneous magnetic field and measuring screen.\" width=\"600\">\n",
+    "\n",
+    "*A diagram of the setup of an EPR experiment. A source sends out one particle to the left and one to the right. They each pass through a Stern-Gerlach device, an inhomogeneous magnetic field and measuring screen.*\n",
+    "\n",
+    "As the meson decays, an electron is kicked out in one direction, and a positron in the other. Each of these two particles will travel through an inhomogeneous magnetic field, causing it to be deflected either in the direction of the magnetic field, or opposite the magnetic field.\n",
+    "\n",
+    "If we have a source of many mesons, we can collect statistics on this. If an observer on the left and one on the right (call them Lucas and Rihanna, respectively) always measure along the same axis, these statistics will not be very interesting: every time one measures up, the other measures down; every time one measures into the page, the other will measure out of the page, and so on. However, if the players are free to measure the spin along any direction they like, we may find something more interesting.\n",
+    "\n",
+    "The experiment described above, in which particles fly off with spin angular momentum that is measured by two observers was initially proposed by Einstein, Podolsky, and Rosen (EPR) in [this paper](https://journals.aps.org/pr/pdf/10.1103/PhysRev.47.777), and this is sometimes referred to as an \"EPR experiment\"."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Our options\n",
+    "\n",
+    "Let us restate the two historical viewpoints, for clarity:\n",
+    "\n",
+    "__Option 1__ (Einstein): The two spins (the electron and positron) are determined, in the sense that the outcome of any measurement along any axis is pre-determined by nature, even if we don't know what it is. One might think of this as the spins having some real, well-defined orientation in space, which is not known to us, but which exists. Or one might think of this as a set of information or instructions that determine outcomes of measurements along $x$, $y$, $z$, or anything in between. Measuring the spin of the positron (say along z) forces it to orient and align in the z or -z direction. This has no causal influence on the electron spin, although we know the electron spin started out opposite the positron spin, so if the positron spin is measured to be along +z, the electron spin is measured along -z. Other than the initial condition of instructions that conserve angular momentum (the spins being anti-aligned), there is no connection between the two spins. This option is sometimes called \"hidden variables\", as in: the projections along different axes are determined, but are hidden from us.\n",
+    "\n",
+    "__Option 2__ (Born): The spins are both undetermined in their initial states… not merely unknown, but ill-defined physically, with no definite orientation or instructions on experimental outcomes, until they are measured. Measuring the positron spin “collapses” the space of all possibilities down to a single determined state, either along the +z or -z axes. This measurement of the positron forces the electron spin to also collapse into a well-defined projection along z, exactly opposite the positron’s. This effect occurs spread out across the space between the positron and electron. This has been called \"spooky action at a distance”, but one might less-dramatically call it \"non-local physics\".\n",
+    "\n",
+    "#### Check your understanding\n",
+    "\n",
+    "It would be great to distinguish between the Einstein and Born options experimentally. What are some experiments that would yield the same results regardless of which option is true? Can you think of an experiment that would yield different results for the two options?\n",
+    "\n",
+    "**Note:** It would be very impressive if you could come up with an experiment that would yield different results for Einstein's and Born's options; it took humans decades to come up with one.\n",
+    "\n",
+    "<details>\n",
+    "<summary>Answer</summary>\n",
+    "\n",
+    "Sticking with the experiment described so far (that is, no net spin with the positron and electron anti-aligned), measurement of both spins along $\\pm x$, $\\pm y$, or $\\pm z$ would always yield opposite signs due to conservation of angular momentum, independent of which option is correct. Measuring one particle's spin (say, the electron) along one direction (say, $+z$) means the spin of the other particle, the positron, would be measured along $-z$. If instead you measure the spin of the positron along the $x$ direction, it will be equally likely to come out $+x$ or $-x$. This could be because that's what the hidden instructions say (Einstein's option 1) or because the probability distribution of the positron's spin updates after the measurement of the electron spin, and the new probability distribution is consistent with a 50-50 split between $\\pm x$ (Born's option 2). These points are explained in more detail below.\n",
+    "\n",
+    "The answer is only slightly different if you consider a decay of a particle with spin-1, such that the two emerging particles (like the positron and electron) must have their spins aligned, rather than anti-aligned. If one is measured along $+y$, a measurement of the other particle along the $y$ axis must also yield $+y$, and so on. As before, this could result from either option.\n",
+    "\n",
+    "The rest of this lesson is devoted to an experiment that can distinguish between Einstein and Born's options, and so we won't go into much detail here. However, part of the trick is measuring the two particles along different directions (like $x$ and $z$, or even some direction between the traditional Cartesian axes). The rest comes from carefully considering the precise probability of obtaining different outcomes given the predictions of quantum mechanics and those of classical information as in hidden variables.\n",
+    "\n",
+    "</details>\n",
+    "\n",
+    "In either option, if the two observers, Lucas and Rihanna, measure along the same axis, we would expect them to obtain anti-aligned spins, regardless of which option is true. To see why, consider the diagrams below.\n",
+    "\n",
+    "<img src=\"https://quantum.cloud.ibm.com/learning/images/modules/quantum-mechanics/bells-inequality-with-qiskit/hidden-var-meas.avif\" alt=\"Three diagrams. First there is a diagram of two spin vectors oriented in opposite directions, lying on a diagonal between the x and z axes. Next, when a measurement is made along z, one friend obtains a spin along negative z, and the other along positive z. Finally, the situation is shown for measurements along the x axis, in which case one measures a spin along negative x, and the other along positive x.\" width=\"600\">\n",
+    "\n",
+    "*Three diagrams. First there is a diagram of two spin vectors oriented in opposite directions, lying on a diagonal between the x and z axes. Next, when a measurement is made along z, one friend obtains a spin along negative z, and the other along positive z. Finally, the situation is shown for measurements along the x axis, in which case one measures a spin along negative x, and the other along positive x.*\n",
+    "\n",
+    "The figure above shows Einstein's option. The directions of the spins are opposite and determined. If we measure along the $z$ axis, one will be along $+z$, and one along $-z$. We have no reason to assume that the positron would be along $+z$, and the electron along $-z$; the image merely shows that the spins will be measured to be in opposite directions. In fact, a given spin need not actually have a component of its spin along the direction eventually measured, in the case of Einstein's option. The weakest statement of Einstein's option is that there is some set of instructions that are stored in the spin that determine what the measurements outcomes will be when measured along any axis. We don't need to picture that these instructions are in the form of a simple vector (see diagram below); we'll return to this, later.\n",
+    "\n",
+    "<img src=\"https://quantum.cloud.ibm.com/learning/images/modules/quantum-mechanics/bells-inequality-with-qiskit/hidden-var-instructions.avif\" alt=\"Three diagrams. The first one no longer shows well-defined vector directions, but instead has a list of rules that determine the measurement outcomes. The second and third diagrams are the same as in the previous picture, showing measurements along positive/negative z, and along positive/negative x.\" width=\"600\">\n",
+    "\n",
+    "*Three diagrams. The first one no longer shows well-defined vector directions, but instead has a list of rules that determine the measurement outcomes. The second and third diagrams are the same as in the previous picture, showing measurements along positive/negative z, and along positive/negative x.*\n",
+    "\n",
+    "The figure below shows Born's option, in which the directions of the positron and electron spins are smeared out in a distribution of probability and have no definite direction. Don't read too much into the shape of the distribution. Each spin could actually have a non-zero probability of pointing in any direction as long as they are opposite each other; we have simply drawn them as fractions of the circle so we can visually distinguish them for discussion. Note that in the case of Born's option, it is still true that angular momentum must be conserved. So if one wave of probability is \"collapsed\" such that the spin points along $+z$, the other will point along $-z$ and be deflected in the opposite direction. The options appear identical.\n",
+    "\n",
+    "<img src=\"https://quantum.cloud.ibm.com/learning/images/modules/quantum-mechanics/bells-inequality-with-qiskit/hidden-var-prob-dist.avif\" alt=\"A diagram showing a blur of possible directions for a spin vector, followed by the same outcomes of measurement as in previous images.\" width=\"600\">\n",
+    "\n",
+    "*A diagram showing a blur of possible directions for a spin vector, followed by the same outcomes of measurement as in previous images.*\n",
+    "\n",
+    "But what happens when observers L and R can measure along any of three axes, with each pair 120 degrees apart, as shown in Figures 4 & 5. Each observer can decide at random along what axis they will measure the spin (a, b, or c). The two do not need to measure along the same axis. When each observer measures, they might find a positive projection on their axis of choice, or they might find a negative projection. For example, Lucas and Rihanna might measure +a and -b or +b and +c. Note that if they happen to choose to measure along the same axis, then they MUST obtain opposite signs in their projections: +a and -a, +b and -b, or +c and -c; they cannot both find, for example +a. In the next section, we will work through how to calculate the probability of Lucas and Rihanna getting the same sign on their measured axes (++ or --) and opposite signs (+-) or (-+).\n",
+    "\n",
+    "<img src=\"https://quantum.cloud.ibm.com/learning/images/modules/quantum-mechanics/bells-inequality-with-qiskit/hidden-var-meas-3.avif\" alt=\"A diagram showing two initial spin vectors, followed by possible measurements along three lines, a, b, and c, each having a positive and negative direction. Because these axes are not mutually perpendicular, Lucas and Rihanna will not measure spins in opposite directions unless they happen to choose to measure along the same axes.\" width=\"600\">\n",
+    "\n",
+    "*A diagram showing two initial spin vectors, followed by possible measurements along three lines, a, b, and c, each having a positive and negative direction. Because these axes are not mutually perpendicular, Lucas and Rihanna will not measure spins in opposite directions unless they happen to choose to measure along the same axes.*\n",
+    "\n",
+    "The two figures above illustrate possible hidden-variables interpretations in this new, three-axis measurement scenario. That is, either the spins are already determined, as vectors, or a set of physical instructions exists somehow embedded in the system such that the outcomes of all possible measurements are pre-determined, even if they are unknowable to experimenters prior to measurement. The alternative is illustrated below. Some probability distribution of outcomes exists, and this distribution can tell us some things about the likelihood of different measurement outcomes, but the outcomes are undetermined by nature prior to measurement.\n",
+    "\n",
+    "<img src=\"https://quantum.cloud.ibm.com/learning/images/modules/quantum-mechanics/bells-inequality-with-qiskit/prob-dist-meas-3.avif\" alt=\"A blurred out probability distribution is shown once again, now with the three new axes a, b, and c. This comes with different measurement probabilities along the various directions.\" width=\"600\">\n",
+    "\n",
+    "*A blurred out probability distribution is shown once again, now with the three new axes a, b, and c. This comes with different measurement probabilities along the various directions.*\n",
+    "\n",
+    "We can ask ourselves, “How often should the two players find the same sign of the spin’s projection?” That is, we are not even recording along which axis they chose to measure; we are simply recording whether they found the same sign or a different sign. It is not obvious whether Einstein's and Born's options will yield the same result in this more complicated measurement scheme. But it should be clear from Figures 4 and 5 that it is $possible$ for there to be a difference. For the case shown in Einstein's option, a measurement of the projection of the $e+$ spin on axis $a$ will definitely yield $+a$, and the projection of the $e-$ spin on axis $b$ will yield $-b$ (barely). But in Born's option, the possibilities are wide open. It is true that angular momentum is still conserved. But since the two magnetic fields are not oriented in along the same axis, we force the particles into a situation where they must collapse onto different axes (through interactions with the field). In the next section, we will use quantum mechanics to determine what the probabilities should be, given Born's option, that Lucas and Rihanna obtain the same sign on their measured axes (++ or --), and the probabilities that they will obtain opposite signs (+- or -+)."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Predictions\n",
+    "\n",
+    "### What does Einstein's option (hidden variables) predict?\n",
+    "\n",
+    "If Einstein's option is true, then any given pair of $e+$ and $e-$ will have a set of vector components to their spins. For example, the electron might have components $(+\\hat{a},-\\hat{b}, +\\hat{c})$, in which case the positron must have components $(-\\hat{a},+\\hat{b}, -\\hat{c})$. We are only specifying here the sign of the projection on each axis, not the magnitude. Imagine we allow a very large number $N$ of such decays to take place, and we collect measurements to populate the table below.\n",
+    "\n",
+    "| Population  | Particle 1                                     | Particle 2                     |\n",
+    "|-------------|------------------------------------------------|--------------------------------|\n",
+    "| $N_1$       | $(+\\hat{a},+\\hat{b},+\\hat{c})$                 | $(-\\hat{a},-\\hat{b},-\\hat{c})$ |\n",
+    "| $N_2$       | $(+\\hat{a},+\\hat{b},-\\hat{c})$                 | $(-\\hat{a},-\\hat{b},+\\hat{c})$ |\n",
+    "| $N_3$       | $(+\\hat{a},-\\hat{b},+\\hat{c})$                 | $(-\\hat{a},+\\hat{b},-\\hat{c})$ |\n",
+    "| $N_4$       | $(+\\hat{a},-\\hat{b},-\\hat{c})$                 | $(-\\hat{a},+\\hat{b},+\\hat{c})$ |\n",
+    "| $N_5$       | $(-\\hat{a},+\\hat{b},+\\hat{c})$                 | $(+\\hat{a},-\\hat{b},-\\hat{c})$ |\n",
+    "| $N_6$       | $(-\\hat{a},+\\hat{b},-\\hat{c})$                 | $(+\\hat{a},-\\hat{b},+\\hat{c})$ |\n",
+    "| $N_7$       | $(-\\hat{a},-\\hat{b},+\\hat{c})$                 | $(+\\hat{a},+\\hat{b},-\\hat{c})$ |\n",
+    "| $N_8$       | $(-\\hat{a},-\\hat{b},-\\hat{c})$                 | $(+\\hat{a},+\\hat{b},+\\hat{c})$ |\n",
+    "\n",
+    "For each case in the table above, there are 9 possible choices for Lucas's and Rihanna's axes: $aa$, $ab$, $ac$, $ba$, $bb$, $bc$, $ca$, $cb$, and $cc$. Reading from this table, the probability of the two observers measuring the same sign for rows 1 and 8 are zero. For rows 2-7, there are 4 ways to obtain the same sign, which we will show only for row 2:\n",
+    "\n",
+    "Same signs: $ac$, $bc$, $ca$, $cb$\n",
+    "Opposite signs: $aa$, $ab$, $ba$, $bb$, $cc$\n",
+    "\n",
+    "So if Einstein's option is the correct interpretation of quantum states, the total probability summed over all possible populations, of Lucas and Rihanna obtaining the same sign of spin projection on their randomly chosen axes would be:\n",
+    "$$ P_\\text{same}=\\frac{1}{\\sum_i{N_i}} \\frac{4}{9} (N_2+N_3+N_4+N_5+N_6+N_7)\\leq \\frac{4}{9}$$\n",
+    "Where equality holds only if $N_1=N_8=0$.\n",
+    "\n",
+    "#### Check your understanding\n",
+    "\n",
+    "For row 2 of the chart above, we listed all the possible ways for Lucas and Rihanna to obtain the same sign for their measurements, and all the ways they could obtain different signs. Repeat this for the third row.\n",
+    "\n",
+    "\n",
+    "<details>\n",
+    "<summary>Answer</summary>\n",
+    "\n",
+    "Same signs: $ab$, $ba$, $bc$, $cb$\n",
+    "\n",
+    "Opposite signs: $aa$, $ac$, $bb$, $ca$, $cc$\n",
+    "\n",
+    "</details>\n",
+    "\n",
+    "\n",
+    "The table above refers to \"populations\", meaning that we do not know how many of each type of instructions nature produces, if the hidden-variables treatment is correct. Show that no matter what the distribution of $N_1$ through $N_8$, the probability of obtaining the same sign from measurements is always less than or equal to 4/9.\n",
+    "\n",
+    "<details>\n",
+    "<summary>Answer</summary>\n",
+    "\n",
+    "Let us start by assuming a constant number of total measurement trials, such that $\\sum_i{N_i} = N_{tot}$ is constant. Note that in the special case where $N_1=N_8=0$, the expression reduces to\n",
+    "\n",
+    "$$\n",
+    "P_{same}=\\frac{1}{N_2+N_3+N_4+N_5+N_6+N_7} \\times \\frac{4}{9} \\times (N_2+N_3+N_4+N_5+N_6+N_7) = \\frac{1}{N_{tot}} \\times \\frac{4}{9} \\times N_{tot}= \\frac{4}{9}\n",
+    "$$\n",
+    "\n",
+    "Now suppose that either $N_1 \\neq 0$ or $N_8 \\neq 0$. Then\n",
+    "\n",
+    "$$\n",
+    "P_{same}=\\frac{1}{N'_1+N'_2+N'_3+N'_4+N'_5+N'_6+N'_7+N'_8} \\times \\frac{4}{9} \\times (N'_2+N'_3+N'_4+N'_5+N'_6+N'_7) = \\frac{4}{9}\n",
+    "$$\n",
+    "\n",
+    "The sum of all trials, $N_tot$, is still the same as before. But since $N'_1$ or $N'_8$ has increased from 0, the sum of $N'_2$ through $N'_7$ must be lower than before. In particular, the sum of $N'_2$ through $N'_7$ is less than $N_{tot}$. Thus\n",
+    "\n",
+    "$$\n",
+    "P_{same}=\\frac{1}{N_{tot}} \\times \\frac{4}{9} \\times (N'_2+N'_3+N'_4+N'_5+N'_6+N'_7) < \\frac{4}{9}\n",
+    "$$\n",
+    "\n",
+    "Combining all possible cases, we have $P_{same} \\leq \\frac{4}{9}$.\n",
+    "\n",
+    "</details>"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Generalization\n",
+    "\n",
+    "In the treatment above, we considered measurements along specific axes. Of course, one could make measurements along any axis. Let us call the two spin vectors of two particles $\\vec{a}$ and $\\vec{b}$. Let $\\lambda$ be some hidden variable such that a state of the two-particle system corresponds to a well-defined value of $lambda$. Let $\\rho(\\lambda)$ be the probability density in $\\lambda$.  Finally, we choose the symbols $A(\\vec{a},\\lambda)$ and $B(\\vec{b},\\lambda)$ to be the pre-determined outcome of a measurement performed on either particle (A or B), given the spin vectors and the hidden variable. Critically, note that $A$ is independent of $\\vec{b}$ and $B$ is independent of $\\vec{a}$. One could now pose any number of questions related to correlations between measurements on A and B. In particular, one could ask about the expectation value given by\n",
+    "\n",
+    "$$\n",
+    "E(\\vec{a},\\vec{b})\\equiv\\int{d\\lambda \\rho(\\lambda)A(\\vec{a},\\lambda)B(\\vec{b},\\lambda)}\n",
+    "$$\n",
+    "\n",
+    "Given some standard assumptions on these values, like $A(\\vec{a},\\lambda)\\leq 1$, $B(\\vec{b},\\lambda)\\leq 1$, and normalization over $\\rho(\\lambda)$, one can show that correlations between the two particles obey the relation\n",
+    "\n",
+    "$$\n",
+    "|E(\\vec{a},\\vec{b})-E(\\vec{a},\\vec{d})|+|E(\\vec{c},\\vec{d})+E(\\vec{c},\\vec{b})|\\leq 2,\n",
+    "$$\n",
+    "\n",
+    "where $\\vec{a}$ and $\\vec{b}$ are the spin states of your system and $\\vec{c}$ and $\\vec{d}$ are reference spin states (any other possible spin states of the system). This is one of a whole class of inequalities known now as \"Bell inequalities\". We won't use this general form here. Instead, we will focus on one specific experimental setup, so that we can map that setup onto a quantum circuit."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### What does Born's option (non-deterministic quantum mechanics) predict?\n",
+    "\n",
+    "Lucas will pick some axis and find the spin of one particle to be in either the positive or negative direction. Whatever he obtains, let us orient our axes such that the $z$ axis is that direction. Then we can write the initial state after the decay of the meson and before any measurement as\n",
+    "$$\n",
+    "|\\psi \\rangle =\\frac{1}{\\sqrt{2}}(|+\\rangle_L|-\\rangle_R-|-\\rangle_L|+\\rangle_R)\n",
+    "$$\n",
+    "Rihanna will measure her particle's spin along some other direction at an angle $\\theta$ relative to Lucas's. The spin operator along some arbitrary direction $\\hat{n}$ is given by\n",
+    "$$\n",
+    "\\hat{S}_{\\hat{n}}=\\frac{\\hbar}{2}\\begin{bmatrix} \\cos(\\theta) & \\sin(\\theta) e^{-i\\phi} \\\\ \\sin(\\theta) e^{i\\phi} & -\\cos(\\theta) \\end{bmatrix}\n",
+    "$$\n",
+    "The eigenstates of this operator are\n",
+    "$$\n",
+    "|+\\rangle_{\\hat{n}}=\\cos(\\theta/2)|0\\rangle+\\sin(\\theta/2)e^{i\\phi}|1\\rangle \\\\ |-\\rangle_{\\hat{n}}=\\sin(\\theta/2)|0\\rangle-\\cos(\\theta/2)e^{i\\phi}|1\\rangle\n",
+    "$$\n",
+    "\n",
+    "#### Check your understanding\n",
+    "\n",
+    "Verify that $|+\\rangle_{\\hat{n}}$ is an eigenstate of the operator $\\hat{S}_{\\hat{n}}$ above, and find the eigenvalue.\n",
+    "\n",
+    "<details>\n",
+    "<summary>Answer</summary>\n",
+    "\n",
+    "\n",
+    "$$\n",
+    "\\hat{S}_{\\hat{n}}|+\\rangle_{\\hat{n}}=\\frac{\\hbar}{2}\\begin{bmatrix} \\cos(\\theta) & \\sin(\\theta) e^{-i\\phi} \\\\ \\sin(\\theta) e^{i\\phi} & -\\cos(\\theta) \\end{bmatrix} \\begin{bmatrix} \\cos(\\theta/2) \\\\ \\sin(\\theta/2)e^{i\\phi}\\end{bmatrix}\n",
+    "$$\n",
+    "$$\n",
+    "=\\frac{\\hbar}{2}\\begin{bmatrix} \\cos(\\theta)\\cos(\\theta/2) + \\sin(\\theta)\\sin(\\theta/2)e^{i\\phi} e^{-i\\phi} \\\\ \\cos(\\theta/2)\\sin(\\theta) e^{i\\phi} -\\cos(\\theta)\\sin(\\theta/2)e^{i\\phi} \\end{bmatrix}\n",
+    "$$\n",
+    "Using $\\cos(\\theta)=\\cos^2(\\theta/2)-\\sin^2(\\theta/2)$ and $\\sin(\\theta)=2\\cos(\\theta/2)\\sin(\\theta/2)$, we have\n",
+    "$$\n",
+    "=\\frac{\\hbar}{2}\\begin{bmatrix} \\left(\\cos(\\theta) + 2\\sin^2(\\theta/2)\\right) \\cos(\\theta/2) \\\\ \\left(2\\cos^2(\\theta/2) -\\cos^2(\\theta/2)+\\sin^2(\\theta/2)\\right)\\sin(\\theta/2)e^{i\\phi} \\end{bmatrix}\n",
+    "$$\n",
+    "$$\n",
+    "=\\frac{\\hbar}{2}\\begin{bmatrix} \\left(\\cos^2(\\theta/2)-\\sin^2(\\theta/2) + 2\\sin^2(\\theta/2)\\right) \\cos(\\theta/2) \\\\ \\left(2\\cos^2(\\theta/2) -\\cos^2(\\theta/2)+\\sin^2(\\theta/2)\\right)\\sin(\\theta/2)e^{i\\phi} \\end{bmatrix}\n",
+    "$$\n",
+    "$$\n",
+    "=\\frac{\\hbar}{2}\\begin{bmatrix} \\cos(\\theta/2) \\\\ \\sin(\\theta/2)e^{i\\phi} \\end{bmatrix}\n",
+    "$$\n",
+    "This demonstrates that $|+\\rangle_{\\hat{n}}$ is an eigenstate and the corresponding eigenvalue is $\\frac{\\hbar}{2}$.\n",
+    "\n",
+    "</details>\n",
+    "\n",
+    "The probability of Lucas measuring a spin to be in the positive direction along the axis he chose $|+\\rangle$ $and$ that Rihanna also measures a positive spin along her chosen direction $|+\\rangle_{\\hat{n}}$ is\n",
+    "$$\n",
+    "P_{++}=\\left|\\left(_L\\langle+|_{R,\\hat{n}}\\langle+|\\right)|\\psi\\rangle\\right|^2\n",
+    "$$\n",
+    "$$\n",
+    "P_{++}=\\left|  \\left(_L\\langle+|_R\\left(\\cos(\\theta/2)\\langle+|+\\sin(\\theta/2)e^{-i\\phi}\\langle-|\\right)\\right)  \\frac{1}{\\sqrt{2}}\\left(|+\\rangle_L|-\\rangle_R-|-\\rangle_L|+\\rangle_R\\right)    \\right|^2\n",
+    "$$\n",
+    "$$\n",
+    "P_{++}=\\frac{1}{2}\\left|  \\left(_L\\langle+|_R\\left(\\cos(\\theta/2)\\langle+|+\\sin(\\theta/2)e^{-i\\phi}\\langle-|\\right)\\right)  \\left(|+\\rangle_L|-\\rangle_R\\right)    \\right|^2\n",
+    "$$\n",
+    "$$\n",
+    "P_{++}=\\frac{1}{2}\\left|  \\left(\\sin(\\theta/2)e^{-i\\phi}\\vphantom{p}_R\\langle-|\\right) |-\\rangle_R    \\right|^2\n",
+    "$$\n",
+    "$$\n",
+    "P_{++}=\\frac{1}{2}\\sin^2(\\theta/2)\n",
+    "$$\n",
+    "\n",
+    "#### Check your understanding\n",
+    "\n",
+    "Do the same for $P_{--}$. Verify that it also equals $\\frac{1}{2}\\sin^2(\\theta).$\n",
+    "\n",
+    "<details>\n",
+    "<summary>Answer</summary>\n",
+    "\n",
+    "$$\n",
+    "P_{--}=\\left|\\left(_L\\langle-|_{R,\\hat{-n}}\\langle+|\\right)|\\psi\\rangle\\right|^2\n",
+    "$$\n",
+    "$$\n",
+    "P_{--}=\\left|  \\left(_L\\langle-|_R\\left(\\sin(\\theta/2)\\langle+|-\\cos(\\theta/2)e^{-i\\phi}\\langle-|\\right)\\right)  \\frac{1}{\\sqrt{2}}\\left(|+\\rangle_L|-\\rangle_R-|-\\rangle_L|+\\rangle_R\\right)    \\right|^2\n",
+    "$$\n",
+    "$$\n",
+    "P_{--}=\\frac{1}{2}\\left|  \\left(_L\\langle-|_R\\left(\\sin(\\theta/2)\\langle+|-\\cos(\\theta/2)e^{-i\\phi}\\langle-|\\right)\\right)  \\left(-|-\\rangle_L|+\\rangle_R\\right)    \\right|^2\n",
+    "$$\n",
+    "$$\n",
+    "P_{--}=\\frac{1}{2}\\left|  \\left(\\sin(\\theta/2) \\vphantom{p}_R\\langle+|\\right) |+\\rangle_R    \\right|^2\n",
+    "$$\n",
+    "$$\n",
+    "P_{--}=\\frac{1}{2}\\sin^2(\\theta/2)\n",
+    "$$\n",
+    "\n",
+    "</details>\n",
+    "\n",
+    "Adding these results, we find that the probability of the signs of the two measured axes are the same $P_{\\text{same}}=\\sin^2(\\theta/2)$.\n",
+    "\n",
+    "#### Check your understanding\n",
+    "\n",
+    "What could you do to check the math of this result? To be clear, we're not asking you to verify yet that it matches nature, just to make sure nothing went wrong in all the math.\n",
+    "\n",
+    "<details>\n",
+    "<summary>Answer</summary>\n",
+    "\n",
+    "(1) Do the same calculation for $P_{\\text{diff}}=\\cos^2(\\theta/2)$ to verify the conservation of probability.\n",
+    "\n",
+    "(2) Check a known case. Insert $\\theta = 0$. Then $P_{\\text{same}}$ corresponds to the two observers each measuring their spin along the same axis, which would violate conservation of angular momentum. So you would expect that probability to be zero, and indeed inserting $\\theta = 0$ yields $\\sin^2(0/2) = 0$.\n",
+    "\n",
+    "(3) Check a different known case. Try $\\theta = \\pi$. What should you obtain. Careful of that $\\frac{1}{2}$.\n",
+    "\n",
+    "</details>\n",
+    "\n",
+    "\n",
+    "We were specifically sketching the case where axes are at $120\\deg$ relative to each other. Remember, whatever direction ($\\pm a$, $\\pm b$, or $\\pm c$) Lucas obtains, we call that $z$. Then Rihanna randomly chooses to measure along either $\\pm a$, $\\pm b$, or $\\pm c$. If her choice is the same as Lucas's (up to a sign), then they are both measuring along $z$, and the probability of Rihanna also measuring $+z$ is zero. This should happen 1/3 of the time, since Rihanna's choice of axis is independent of Lucas's choice. For any other choice, Rihanna will be measuring along an axis either $120\\deg = 2\\pi/3$ radians from $z$ (1/3 of the time) or $240\\deg = 4\\pi/3$ radians from $z$ (1/3 of the time). And of course, along either of those axes, the spin could be measured to be in the positive or negative direction. This gives us a total probability of Lucas and Rihanna obtaining the same sign:\n",
+    "\n",
+    "$$\n",
+    "P_{\\text{same}} = \\frac{1}{3}\\left(   0 + \\sin^2(\\pi/3) + \\sin^2(2\\pi/3)     \\right) = \\frac{1}{3}\\left(   0 + \\frac{3}{4} + \\frac{3}{4}     \\right) = \\frac{1}{2}\n",
+    "$$"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Wow\n",
+    "\n",
+    "We just showed that\n",
+    "\n",
+    "$$\n",
+    "(P_\\text{same})_\\text{max, Einstein}<(P_\\text{same})_\\text{max, Born}.\n",
+    "$$\n",
+    "\n",
+    "Let's take a step back.\n",
+    "\n",
+    "Einstein's and Born's options seemed like they would always yield the same results, since they only differed in their description of what happens prior to measurement. And yet, assuming there were instructions that pre-determined the sign of the spin measurement along certain axes, we obtained a constraint on the probability for the measurements to yield the same sign $(P_{\\text{same}})_\\text{Einstein}\\leq\\frac{4}{9}$. Then we assumed probability distributions as in quantum mechanics... and obtained a different value for $(P_{\\text{same}})_\\text{Born}=\\frac{1}{2}$. The prediction from quantum mechanics is higher than that allowed by the hidden variables treatment. So we can actually do an experiment and discover whether quantum mechanical states are determined by nature prior to measurement, or if they are truly in a probabilistic superposition of possible states.\n",
+    "\n",
+    "This experiment has been done many times using many different physical systems, often photons. There are many subtle considerations, such as biases in measurement, the timing(simultaneity) of measurements, and many others. Over the decades, concerns about these subtleties have been steadily eroded. Tests are still implemented, as we learn more about reality, but there is now broad agreement that the answer you'll obtain here, using IBM&reg; quantum computers, is correct."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Test using real quantum computers!\n",
+    "\n",
+    "In keeping with our treatment above, let us define the direction of Lucas's measurement to be $+z$. This was convenient even in the algebraic approach, but it is especially convenient for quantum computation, since what is typically measured is the qubit's projection along $z$.\n",
+    "We want to make a quantum circuit that gives us the same probability conditions as those above for $P_{++}$. We are free to orient our plane such that $\\phi=0$, and we obtain\n",
+    "$$\n",
+    "P_{++}=\\left|  \\left(_L\\langle+|_R\\left(\\cos(\\theta/2)\\langle+|+\\sin(\\theta/2)\\langle-|\\right)\\right)  \\frac{1}{\\sqrt{2}}\\left(|+\\rangle_L|-\\rangle_R-|-\\rangle_L|+\\rangle_R\\right)    \\right|^2\n",
+    "$$\n",
+    "We need to know a few things about IBM quantum computers, to guide our discussion. Firstly, qubits start out initialized in the $|0\\rangle = |+\\rangle_z$ state. As mentioned, before, when measurements are made, they are along the $z$ axis. So the goal is to determine what operators we can insert between the measurement basis states $\\langle 0|\\langle 0|$ and the initial states of the qubits $|0\\rangle |0\\rangle$ to obtain the complicated expression above. For that, we'll need to review some basic gates in quantum computing.\n",
+    "\n",
+    "$X$ gate: Equivalent to a NOT operation. Single-qubit gate.\n",
+    "$$\n",
+    "X|0\\rangle = |1\\rangle,\\\\X|1\\rangle=|0\\rangle\n",
+    "$$\n",
+    "$$\n",
+    "X=\\begin{bmatrix} 0 & 1 \\\\ 1 & 0 \\end{bmatrix}\n",
+    "$$\n",
+    "\n",
+    "In Qiskit, creating a circuit with an $X$ gate looks like this:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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",
+      "text/plain": [
+       "<Figure size 185.453x117.056 with 1 Axes>"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from qiskit import QuantumCircuit\n",
+    "\n",
+    "qc = QuantumCircuit(1)\n",
+    "qc.x(0)\n",
+    "qc.draw(\"mpl\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "$H$ Hadamard gate: Creates a superposition state. Single-qubit gate.\n",
+    "$$\n",
+    "H|0\\rangle = \\frac{1}{2}\\left(|0\\rangle+|1\\rangle\\right),\n",
+    "$$\n",
+    "$$\n",
+    "H|1\\rangle = \\frac{1}{2}\\left(|0\\rangle-|1\\rangle\\right)\n",
+    "$$\n",
+    "$$\n",
+    "H=\\frac{1}{2}\\begin{bmatrix} 1 & 1 \\\\ 1 & -1 \\end{bmatrix}\n",
+    "$$\n",
+    "\n",
+    "A circuit with a Hadamard gate is made as follows:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAKIAAABuCAYAAACk2MjUAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjExLjIsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvgI3uAAAAAAlwSFlzAAAPYQAAD2EBqD+naQAABKJJREFUeJzt3T1IZFcYgOFvxtHVHU0sFGTA30IEBRU0EAQbSWFhYWFEBLfSSmwsBDsrEUFBbC3WQkSFVGEhEiGCkEXZRo2gYETU+AOKib+ZcSacs7uShZlE11nnu3fep7nqHZgLvp57zp25oycSiUQESDBvog8AMAgRKhAiVCBEqECIUIEQoQIhQgVChAqECBUIESoQIlQgRKhAiFCBEKECIUIFQoQKhAgVCBEqECJUIESoQIhQgRChAiFCBUKECoQIFQgRKhAiVCBEqECIUIEQoQIhQgVChAqECBUIESoQIlQgRKhAiFDBl+gDcDP7Dxtub8VRXrwQj8fz7E9LiF/S7a2Evn8lTuKbeS2Snv7sz8upGSoQIlQgRKhAiFCBEKECIUIFQoQKhAgVCBEqECJUIESoQIhQgRChgmtDvL6+lqOjIwmHw/c/Ozk5kZ2dHbm4uBAnKfv5R/nml59i7u9496vkvvlBTv922FvO3Bzi/Py81NfXS2ZmpuTl5UlWVpb09vZKKBSS5uZmKS4ulsXFRXGS82BQ/gqFYu6/DIXkPBSUcEQcy1XvRxwcHJT+/n77tc/nk5ycHDsKjoyMiNfrla2tLbuvqqoqwUcK146IMzMzNsK0tDQZHh6W09NTe2o225aWFhkfH5fj42PJzc2VQCCQ6MOFG0fEs7Mz6erqsl9PTk5Ka2vr/b7s7GyZmJiQgoICubm5YTRUyhUhjo6Oyvn5uTQ1NX0S4UdmnlheXi5LS0uODfH3q0u7IInm8i72/NEpXBHi9PS03XZ3d8d8TGpqqt1WVlaKE4UlYhckbuX4EA8ODuwixCxOzGo5lu3tbbt9yohYU1Mjh4eHD358htcrv1V9K/FQ/NIvb+u/i7rv1bu38ub4j7g8T2lpqVz/65LXY5irFCsrK8kZ4t7ent2aRUh6jLvP1tfXZXd31+4vKyv77OcyEe7v7z/48S9TUkTiNBPwikeyU9Oi7vPF8fZP84d9dXcnz83xId5+uG/YLFjMfcTR7skdGBiw24qKCkkxcXwm8xf/GGZEdJpAIPCkETFpQ8zPz7dbsyJeWFiQhoaGT/aPjY3J7OxsXOaHjz3tRG5uHHdf8+bmpni4r/nxioqK7IrY6OjokKmpKdnY2LBRtrW1SV9fnz1tG05dMScDx4+IH0e9xsZGO79pb2+//7nf77dhdnZ22u8JUS9PxH5Ai/MtLy/L0NCQrK2t2euGdXV10tPTIxkZGXbeY+aO5lqj2fdc4nVq/jMYFDP1zfK9vwQV7bXmYCQsX/tSn/y5NeYjRxJxanbFiGjU1tbK3Nxc1DdBGCUlJc8aYTx99eEaaCx+n/N/jc5b1j3S6uqqoy9kJwvXh2hO1QbzQ92SZkQkRN1cH+LV1ZUUFhZKdXV1og8F/8H5s9z/YV7eg36uHxHhDIQIFQgRKhAiVCBEqECIUIEQoQIhQgVChAqECBVc88ZYjfinkA9HiFCBUzNUIESoQIhQgRChAiFCBUKECoQIFQgRKhAiVCBEqECIUIEQoQIhQgVChAqECBUIESoQIlQgRKhAiFCBEKECIUIFQoQKhAgVCBEqECJEg38ALvkvSSYe3YsAAAAASUVORK5CYII=",
+      "text/plain": [
+       "<Figure size 185.453x117.056 with 1 Axes>"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "qc = QuantumCircuit(1)\n",
+    "qc.h(0)\n",
+    "qc.draw(\"mpl\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "CNOT Controlled-NOT gate: This gate uses two qubits: a control and a target. Checks the state of a control qubit which is not changed. But if the control qubit is in the state $|1\\rangle$, the gate changes the state of the target qubit; if the state of the control qubit is $|0\\rangle$ no change is made at all. In the notation below, assume the first qubit is the control, and the second is the target.\n",
+    "$$\n",
+    "CNOT|00\\rangle = |00\\rangle, \\\\\n",
+    "CNOT|01\\rangle = |01\\rangle \\\\\n",
+    "CNOT|10\\rangle = |11\\rangle \\\\\n",
+    "CNOT|11\\rangle = |10\\rangle\n",
+    "$$\n",
+    "\n",
+    "A CNOT gate looks a bit different in a circuit, since it requires two qubits. This is how it is implemented:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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",
+      "text/plain": [
+       "<Figure size 203.683x200.667 with 1 Axes>"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "qc = QuantumCircuit(2)\n",
+    "qc.cx(0, 1)\n",
+    "qc.draw(\"mpl\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Note that the first qubit listed in `qc.cx(0,1)` is the control, and the second is the target. Diagrammatically, the target is the one with the \"+\" sign or cross on it.\n",
+    "\n",
+    "$R_y(\\theta)$ Rotation Y gate: Rotates the state about the y-axis. This is a single-qubit gate.\n",
+    "$$\n",
+    "R_y(\\theta)|0\\rangle = \\cos(\\theta/2)|0\\rangle+\\sin(\\theta/2)|1\\rangle,\\\\R_y(\\theta)|0\\rangle = -\\sin(\\theta/2)|0\\rangle+\\cos(\\theta/2)|1\\rangle\n",
+    "$$\n",
+    "$$\n",
+    "R_y(\\theta)=\\begin{bmatrix} \\cos(\\theta/2) & -\\sin(\\theta/2) \\\\ \\sin(\\theta/2) & \\cos(\\theta/2) \\end{bmatrix}\n",
+    "$$\n",
+    "\n",
+    "Finally, rotation gates are implemented by specifying the type of gate, the amount of the rotation, and the qubit on which the gate is placed, in that order:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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",
+      "text/plain": [
+       "<Figure size 203.683x200.667 with 1 Axes>"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "\n",
+    "pi = np.pi\n",
+    "\n",
+    "qc = QuantumCircuit(2)\n",
+    "qc.ry(pi / 2, 0)\n",
+    "qc.draw(\"mpl\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The name of the gate `ry` specifies the axis about which the rotation occurs. The first argument $\\pi/2$ refers to the amount of the rotation, and the second argument specifies the qubit on which the gate is to be placed.\n",
+    "\n",
+    "#### Check your understanding\n",
+    "\n",
+    "Using the syntax introduced or refreshed above, make any quantum circuit involving four different types of quantum gates.\n",
+    "\n",
+    "<details>\n",
+    "<summary>Answer</summary>\n",
+    "\n",
+    "There are, of course, infinitely many possibilities. Here is one example:\n",
+    "\n",
+    "```python\n",
+    "\n",
+    "qc=QuantumCircuit(2)\n",
+    "qc.ry(pi/2,0)\n",
+    "qc.cx(1,0)\n",
+    "qc.x(1)\n",
+    "qc.h(0)\n",
+    "qc.cx(0,1)\n",
+    "qc.draw(\"mpl\")\n",
+    "```\n",
+    "\n",
+    "\n",
+    "</details>"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### From physical experiment to quantum circuits\n",
+    "\n",
+    "From the operations of these gates, we can see, for example, that the kets in the expressions for $P_{++}$:\n",
+    "$$\n",
+    "\\frac{1}{\\sqrt{2}}\\left(|+\\rangle_L|-\\rangle_R-|-\\rangle_L|+\\rangle_R\\right)\n",
+    "$$\n",
+    "are likely to involve a Hadamard gate to get the superposition, and a CNOT gate to create the entanglement.\n",
+    "\n",
+    "We will now use the H, X, and CNOT gates to turn $|0\\rangle_L|0\\rangle_R$ into $\\frac{1}{\\sqrt{2}}\\left(|+\\rangle_L|-\\rangle_R-|-\\rangle_L|+\\rangle_R\\right)$:\n",
+    "\n",
+    "$$\n",
+    "\\frac{1}{\\sqrt{2}}\\left(|0\\rangle_L|1\\rangle_R-|1\\rangle_L|0\\rangle_R\\right)\n",
+    "$$\n",
+    "$$\n",
+    "\\frac{1}{\\sqrt{2}}CNOT_{LR}\\left(|0\\rangle_L|1\\rangle_R-|1\\rangle_L|1\\rangle_R\\right)\n",
+    "$$\n",
+    "Here $CNOT_{LR}$ means a CNOT gate using L as the control and R as the target. We can now factor out the R part of the state:\n",
+    "$$\n",
+    "\\text{CNOT}_{LR}\\frac{1}{\\sqrt{2}}\\left(|0\\rangle_L-|1\\rangle_L\\right)|1\\rangle_R\n",
+    "$$\n",
+    "$$\n",
+    "\\text{CNOT}_{LR} H_L|1\\rangle_L|1\\rangle_R\n",
+    "$$\n",
+    "$$\n",
+    "\\text{CNOT}_{LR} H_L X_L X_R|0\\rangle_L|0\\rangle_R\n",
+    "$$\n",
+    "\n",
+    "Now we have written the ket entirely as quantum gates operating on the default starting state of the qubits.\n",
+    "\n",
+    "Now we can use the $R_y(\\theta)$ acting on $\\vphantom{p}_L\\langle 0|_R\\langle 1|$ to obtain the bra in the expression for $P_{++}$.\n",
+    "\n",
+    "$$\n",
+    "\\vphantom{p}_L\\langle0|_R\\left(\\cos(\\theta/2)\\langle0|+\\sin(\\theta/2)\\langle1|\\right)\n",
+    "$$\n",
+    "$$\n",
+    "\\vphantom{p}_L\\langle0|_R\\left(|0\\rangle \\cos(\\theta/2)+|1\\rangle \\sin(\\theta/2)\\right)^{\\dagger}\n",
+    "$$\n",
+    "$$\n",
+    "\\vphantom{p}_L\\langle0|\\left(R_{y,R}(\\theta)|0\\rangle_R\\right)^{\\dagger}\n",
+    "$$\n",
+    "$$\n",
+    "\\vphantom{p}_L\\langle0|_R\\langle0|R_{y,R}(-\\theta)\n",
+    "$$\n",
+    "\n",
+    "Combining these results, we can write the probability $P_{++}$ as\n",
+    "\n",
+    "$$\n",
+    "p_{++}=\\left|\\vphantom{p}_L\\langle0|_R\\langle0|R_{y,R}(-\\theta)\\text{CNOT}_{LR} H_L X_L X_R|0\\rangle_L|0\\rangle_R\\right|^2\n",
+    "$$\n",
+    "\n",
+    "This gives us explicit instructions for how to construct our quantum circuit. We will apply X, H, CNOT and $R_y$ gates to qubits representing the quantum states of particles measured by Lucas and Rihanna, and make measurements to obtain the probability.\n",
+    "\n",
+    "IBM Quantum recommends tackling quantum computing problems using a framework we call Qiskit patterns. It consists of the following steps.\n",
+    "- Step 1: Map your problem to a quantum circuit\n",
+    "- Step 2: Optimize your circuit for running on real quantum hardware\n",
+    "- Step 3: Execute your job on IBM quantum computers using Runtime Primitives\n",
+    "- Step 4: Post-process the results\n",
+    "\n",
+    "Basically all the work we did above was step 1. Let's build the resulting circuit using Qiskit!"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 1: Mapping our results to a quantum circuit"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# We'll begin by importing qiskit and a visualization module so that we can plot a\n",
+    "# histogram of our results.\n",
+    "\n",
+    "from qiskit.visualization import plot_histogram"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Remember that 1/3 of the time Rihanna's axis of choice will be $2\\pi/3$ radians from Lucas's, 1/3 of the time it will be $4 \\pi/3$ radians from Lucas's, and 1/3 of the time, they will choose the same axis. So we actually need to make 3 quantum circuits for these 3 cases, and add up the results. We'll carefully explain the first one, and the last two we will simply state."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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TFSrVi3tSZLL586diylTpqCwxj44Nk5EVHR43ccYOZef/WvJkiUYOnSoGiuXY9j6+fnBy8tLHSv81q1b8PHxQUjIvY+gYykcGyciorwomgsJsyGV3bZv367WlMsEuMDAQOzfv1+FeIMGDfDRRx8V2rawihsREeUVW+TZCA8PV6VZpXu7SpUqKFGiBAoTW+NERJRXHCPPhtRYb9SoEaxFDm7v6uLMmupERHRPbJHbKKk65OLsxIOjEBFRrhjkREREGuNkNyIiIo0xyImIiDTGICciItIYg5yIiEhjDHIiIiKNMciJiIg0xiAnIiLSGIOciIhIYwxyIiIijTHIiYiINMYgJyIi0hiDnIiISGMMciIiIo0xyImIiDTGICciItIYg5yIiEhjDHIiIiKNMciJiIg0xiAnIiLSGIOciIhIYwxyIiIijTHIiYiINMYgJyIi0hiDnIiISGMMciIiIo0xyImIiDTGICciItIYg5yIiEhjDHIiIiKNMciJiIg0xiAnIiLSGIOciIhIYwxyIiIijTHIiYiINMYgJyIi0hiDnIiISGMMciIiIo0xyImIiDTGICciIoK+/h+TyY9aSFGNsQAAAABJRU5ErkJggg==",
+      "text/plain": [
+       "<Figure size 621.739x284.278 with 1 Axes>"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# We start by declaring our first quantum circuit, and giving it two qubits (the first \"2\") and two\n",
+    "# classical bits for storing outputs (the second \"2\")\n",
+    "# Define registers\n",
+    "from qiskit import ClassicalRegister, QuantumRegister\n",
+    "\n",
+    "qr = QuantumRegister(2, \"q\")\n",
+    "cr = ClassicalRegister(2, \"c\")\n",
+    "qc1 = QuantumCircuit(qr, cr)\n",
+    "\n",
+    "# We know from our analysis above that we need an X gate acting on each of the qubits (L and R)\n",
+    "qc1.x([0, 1])\n",
+    "# We need a Hadamard gate acting on Lucas's qubit, which we're calling the 0th qubit.\n",
+    "qc1.h(0)\n",
+    "# The controlled-NOT gate uses the 0th qubit (Lucas's) as the control and the 1st qubit (Rihanna's)\n",
+    "# as the target.\n",
+    "qc1.cx(0, 1)\n",
+    "# The rotation gate acts on the 1st qubit (Rihanna's) and has an argument of -2 pi/3\n",
+    "qc1.ry(-2 * pi / 3, 1)\n",
+    "# Finally, we want to measure all the qubits in the circuit to obtain measurement probabilities, and\n",
+    "# store the results in the classical bits.\n",
+    "qc1.measure([0, 1], [0, 1])\n",
+    "# Now we can draw the first of the three circuits that will check Bell's inequality for us.\n",
+    "qc1.draw(output=\"mpl\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The code below quickly constructs all three circuits in a more streamlined way. Note that the only difference between the three circuits is how far we rotate the two qubits about the $y$ axis."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "qcs = [QuantumCircuit(2, 2), QuantumCircuit(2, 2), QuantumCircuit(2, 2)]\n",
+    "for i in range(0, len(qcs)):\n",
+    "    qcs[i].x([0, 1])\n",
+    "    qcs[i].h(0)\n",
+    "    qcs[i].cx(0, 1)\n",
+    "\n",
+    "qcs[0].ry(-2 * pi / 3, 1)\n",
+    "qcs[1].ry(-4 * pi / 3, 1)\n",
+    "qcs[2].ry(-2 * pi / 3, 1)\n",
+    "qcs[2].ry(-4 * pi / 3, 1)\n",
+    "\n",
+    "for i in range(0, len(qcs)):\n",
+    "    qcs[i].barrier()\n",
+    "    qcs[i].measure([0, 1], [0, 1])\n",
+    "\n",
+    "counts_list = [None] * len(qcs)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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",
+      "text/plain": [
+       "<Figure size 705.35x284.278 with 1 Axes>"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "qcs[0].draw(output=\"mpl\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now we will use a Qiskit primitive called the StatevectorSampler. A sampler is a primitive designed to sample all the possible states of a system and return probabilities (or in some cases, quasiprobabilities) of obtaining each state. We can specify a number of \"shots\", and look at the \"counts\" for each state."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from qiskit.primitives import StatevectorSampler\n",
+    "\n",
+    "sampler = StatevectorSampler()\n",
+    "\n",
+    "# Start a job that will return shots for all 100 parameter value sets.\n",
+    "for i in range(0, len(qcs)):\n",
+    "    pub = qcs[i]\n",
+    "    job = sampler.run([pub], shots=10000)\n",
+    "    # Extract the result for the 0th pub (this example only has one pub).\n",
+    "    result = job.result()\n",
+    "    data_pub = result[0].data\n",
+    "    counts = data_pub.c.get_counts()\n",
+    "    counts_list[i] = counts\n",
+    "#    plot_histogram(counts)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "If we look at the counts from each circuit, we see that two of them were basically identical, and the third was quite different."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAnYAAAHWCAYAAAD6oMSKAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjExLjIsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvgI3uAAAAAAlwSFlzAAAPYQAAD2EBqD+naQAAPzBJREFUeJzt3Qm8TfX+//GPzIRMCcmcKUMUmSpDAxLShFwaNQ803HQr6hbV1UyKohKR5kjUVSoKmSWZyRSZZXb+j/f3/tf+7XPO3pxznGHv73k9H4/9OOesvc4e197rvT7fYeVISEhIMAAAAMS9k7L6AQAAACB9EOwAAAA8QbADAADwBMEOAADAEwQ7AAAATxDsAAAAPEGwAwAA8ATBDgAAwBO5svoBxLujR4/ahg0brFChQpYjR46sfjgAAMAzOpfE7t27rUyZMnbSSceuyRHsTpBCXbly5U70ZgAAAI5p3bp1dvrppx9zHYLdCVKlLnixCxcufKI3BwAAkMiuXbtcESnIHMdCsDtBQfOrQh3BDgAAZJSUdPli8AQAAIAnCHYAAACeoCkWQLYxZ84cW7t2baJlRYsWtQsuuCDZCLS5c+fan3/+abVr17ayZctGvc2NGzfazz//bGeeeabVrFkz0XUHDhyw+fPn2969e61GjRp22mmnpfMzAoDECHYAso2XX37ZvvnmG2vQoEFoWZUqVRIFux07dljbtm1t5cqVVrVqVfvll1/s0UcftYcffjjZ7R0+fNiuuOIKmz17tvXp08cGDhwYuu7NN9+0J5980o1g0/QEs2bNsl69etmLL76YCc8UQHZFsAOQrSjEjRo1Kur1Dz30kG3fvt1+//13NyDqyy+/dEGvRYsWdt555yVa95FHHnHhT+snVaBAAVetK1KkiPt7+vTp1rRpU2vfvr21atUqA54ZANDHDkA2o4rcV1995Spof//9d6Lrjhw5YmPGjLFbbrklNMq9TZs2VqtWLXv33XcTrTtlyhQbP368vfrqqxHvp0uXLqFQJ2rS1Yg23T8AZBQqdgCylR9//NH27dvn5p5Upe21116zK6+80l2n5lfN7l63bt1E/1OvXj1bsGBB6O/Nmzdbz549bdy4ccec5ijof7dz50576623XOVPFTsAyCiMigWQbaiKtn79etfPbunSpXbnnXda9+7dbdmyZe56BbBgQEW44sWLhyptGljxj3/8w2688UbXtHosGqgxcuRIe+ONN+y3336ziy66yPLkyZNhzw8ACHYAso1LLrnE9X0TNYtqUETOnDlt0qRJblkQupI20e7Zs8fy5s3rfleTrAZU1KlTxz755BN30fUKh5999lmi/2vUqJG7XlXCL774wvXfU1MvAGQUmmIBZFsaraqmVE1rIhUrVnSBT8204fS3rhP1m2vWrFmiARiq9C1cuNDefvttu/zyyyPe17nnnuuaeKdOneoqh4gvS5YssbFjx9o555xjl112WaLr1ISvKrCa9vU+a6BNOB04/PTTT4mWFStWzO6+++7Q388++2yyAwrRAYRGXgMpRcUOQLagqUmSDlzQAAr1g6tfv777W+dhVPPqhx9+GFpHoe+7775zgyikQ4cOoUpdcNE8d9r5Bv936NAhd27HcOq7pwBwrDnxEJsUuK666ip74YUXXOU1nJrazzrrLBfYN23aZD169LAbbrghWbAbPXp0qu5T22r//v3d6GwgNajYAcgWNFlw48aNrXPnzm6y4NWrV7sddbt27VxYCzzzzDOu4nL77be7+e6GDBnidtzXXXddiu9LgzM0NYoGZVSvXt22bdvm5rVTtU+3i/iiylrr1q2TVd3279/v3s/HH3/cNbPLAw884OZGVBAMDgZEE1j369cv6n08+OCDif4ePHiw5cqVyw3SAVKDih2AbKFgwYI2Y8YMO+WUU9zcdKrEaVCDKjBqkg00adLEZs6c6ZZNnjzZhTNV7I416EE7fU2JElDzrvrV6efEiRNt8eLFdscdd9iiRYusZMmSGf5ckX408lkjm8Mnnw7o4EAhvnnz5qFlpUuXtsqVK7v/C6dBO2puHTp0qJvf8Hh0IKAR1JytBKlFxQ5AtqFQd//99x93PfWFizY/XSSR1tXI2pTcF2LXqlWr7K677nJzFubLly/Z9eXLl3eDahTidUAQTIWzYsWK0CCdcGr2nzdvnt1zzz2uCvjcc89FvF+dzk6Xp556KgOeFXxHsAMAIAn1k7z22mvdqeQ0gCGS/Pnz26BBg6x3796uCleqVClXAa5UqZIbKR249dZbE51KTpVgjdC++OKL3RQ4SQ0fPtzKlSvn1gFSi6ZYAACSUFPqr7/+6ka6qm+cLn/88Yc7L7B+P3jwoFtPTeyqwmnQjZphP/74Y6tZs6Yb9RpQP8twCnQKf99++22y11399jTQQvMkhncRAFKKih0AAElogE2fPn1SvK4ucvToUdc0e7wpbTTRdaTpTTSyWiOqk46sBVKKYAcAQBKaAieYBid82hKdXi58dKuqeqrIBdU1DY7466+/XPNr+LQ6mt8uoD576r+XdL67YNDEpZde6ppigbQg2AEAkEYKbddff72df/75btCEQpvOTqKRsQH1wdOobE2bs2HDBvvoo4/coIyk5w3WPIdqntX1QFrlSFA9GGmmkrnmptLM88c6GTgAIL5pUIOmH0l65gmddUQDIrQPiDZFiabM0anotL/QfIrqhxcpJGoqnr59+7o57IC0ZA2C3Qki2AEAgFjJGgy5AQAA8ATBDgAAwBMEOwAAAE8Q7AAAADxBsAMAAPAEwQ4AAMATBDsAAABPEOwAAAA8QbADAADwBMEOAADAEwQ7AAAATxDsAAAAPEGwAwAA8ATBDgAAwBO5svoBAEBmqP127Zh5oRf2WJjVDwGAp6jYAQAAeIJgBwAA4AmCHQAAgCcIdgAAAJ4g2AEAAHiCYAcAAOAJpjsBACAJpsdBvKJiBwAA4AmCHQAAgCcIdgAAAJ4g2AEAAHiCYAcAAOAJgh0AAIAnCHYAAACeINgBAAB4gmAHAADgCYIdAACAJwh2AAAAniDYAQAAeIJgBwAA4AmCHQAAgCcIdgAAAJ4g2AEAAHiCYAcAAOAJgh0AAIAnCHYAAACeINgBAAB4gmAHAADgCYIdAACAJwh2AAAAniDYAQAAeIJgBwAA4AmCHQAAgCcIdgAAAJ4g2AEAAHgil8Wwn3/+2QYMGGBNmjSxBx98MLT8gw8+sPfeey/RugULFky2bPXq1TZkyBBbs2aNVa1a1e6++2479dRTU70OAABAPIjZYLdz507r1q2bHTp0yHLlSvwwly5dakuWLLFnnnkmtCx37tyJ1lm1apWdc8451qJFC2vXrp2NGTPG/T1nzhwrUaJEitcBAACIFzEb7G6++Wbr2rWrC1mRFC1a1Dp27Bj1/5944gmrUKGCjRs3zk466SR3W1WqVLHnn3/enn766RSvAwAAEC9iso/d66+/7ppGH3vssajrrF271rp37+4C4LBhw+zw4cOJrv/yyy+tU6dOLrBJ3rx5rX379m55atYBAACIFzFXsVu8eLE9+uijNn369GRNsIEcOXJY8+bNrWXLlrZjxw576qmnbPjw4fb9999bnjx5bN++fbZ582YrV65cov/T36NHj3a/p2SdSA4cOOAugV27drmfajLWRRQUc+bMaUeOHLGjR4+G1g2WK4QmJCSElmuZrou2PLjdQPC6JA2z0ZarmVqPQ48n/DXU+tGWR3vsPCfep3jd9mKJngufp9j/3osVwWsRS5+nWHqfssNzOpTkMcVNsFPYuuaaa2zgwIGuSTSaO++804oUKRL6+6qrrrLq1avbG2+84a4LgleBAgUS/d/JJ59s+/fvd7+nZJ1INJijf//+yZZPnjw5dFtnnHGGnX322bZgwQJXWQxUq1bNPc6ZM2fali1bQsvr1atn5cuXt2nTptnu3btDyxs3buwGcui2wzcc9QnMnz+/TZw4MdFjaNu2rXsNp06dGlqmDUb9B7du3WozZswILS9UqJALxuvWrbN58+aFlpcsWdINVlm2bJnryxjgOfE+xfu2F0v0XPiOiP3vvVih5xxrn6dYep+yw3P6+++/LaVyJMTQIe1nn33mQlqbNm1Cy3766SeXWs8991wX3KKNWD3//POtUqVKNnLkSPeG5MuXz412veWWW0Lr9OvXzzXzbty4MUXrpLRipyqf3sTChQtnm6MHnhPvU7xte/VH17dYMe+6eXyeYvx7L5a2lzld58Tc5ylW3qfs8px27drlBnVqYGmQNeKiYqfwNnbs2ETL1q9f716knj17umpaNGqSDV5k/axZs6bNnz8/0TpKyXXq1EnxOpGoH54uSekxJh2ZqzdFl6SiNTFHW570dtOyXBtJ0JcwJcujPXaeE+9TvG97sSB4Hnye4uPzlNXCn1usfZ5i6X3y+TnljnLfMT94onTp0m6ka/ilVKlSVqZMGfd70NQ5YsSIRAl51KhRtnDhQuvQoUNomQZWaLRrUJbV9V999ZVbnpp1AAAA4kXsHtIew/Lly12zqyYUVhOo5qMbNGiQG9EauPfee10zbt26dV0F7pdffnGBTXPjpWYdAACAeBFTfewiCe9jF2779u2uGVVVvBo1ariOidFG2aoip8EYCoJpXScatXtrIEdK2r0BZJ3ab9eOmZd/YY+FWf0QcBxsL4glqckaMV+xO++886JOUHzhhRce9/9r1arlLie6DgAAQKyLqT52AAAASDuCHQAAgCcIdgAAAJ4g2AEAAHiCYAcAAOAJgh0AAIAnCHYAAACeINgBAAB4gmAHAADgCYIdAACAJwh2AAAAniDYAQAAeIJgBwAA4AmCHQAAgCcIdgAAAJ4g2AEAAHiCYAcAAOAJgh0AAIAncmX1A0B8Wrt2rY0dO9YOHz5s7dq1szp16oSu27Nnj/Xt2zfi/7Vu3douv/zy0N8rVqywjz76yPbu3Wvdu3e3ypUrR73PKVOm2Oeff+7u75JLLknnZwQASKm77rrLxo8fb/v27bMyZcrYyJEjrWHDhqHrixcv7q5LSt/xCxcuDP195513utv5+++/3XWTJ0+2kiVLJvqfe++9195//323TpEiRdz+5bbbbuPNioJgh1S76KKLbOrUqXbKKafYkSNH3IesadOm9sMPP7jrd+3aZZ988kmi/9m9e7ft2LHD9u/fHwp2N910k7355ptWuHBhy5kzp/Xv3999gF944YVk97lhwwYX6A4dOmTr1q0j2AFAFilVqpT7Pj/zzDMtf/78NmfOHGvUqJE78L7sssvcOi1btnTf+4FNmzbZ/PnzE91O1apVbfny5XbGGWdYxYoVbdasWXbaaafZtm3bXICTc845x3755RcXHuvVq2fz5s2z22+/3X777Td76aWXMvmZxweaYpFqNWrUcB+8rVu32vbt2+1f//qX/fjjj/bhhx+66/UBVEUv/FKrVi133dNPP+1+/vzzzy7UdenSxXbu3Olu78EHH7QXX3zRfXCTatKkSaKjQQBA1hg1apQdOHDAVd5mzpxpf/75p1uufUHggw8+sEmTJoUuBw8edMv1vS9btmxxoU5hbc2aNTZjxgxbuXKlHT161Nq2bRu6nblz57oiwvr1623atGmucHDSSSfZ22+/nenPO14Q7JBqL7/8squyBZo1a+Z+KuhFog/0Tz/95MJdiRIl3LJPP/3U/VSVLjBgwAD389///nei/7/++uvdl4BK9ACArG+1CRe01lSpUiXq/6jCVqBAgdABukKanHvuuaF1VLlTaFOFLpA3b17XVSeggKfwp6ohIiPYIU3++9//2t13321XXXWVderUyapXr269evWKuK4Cm5psH3nkkdCyatWquZ9ff/11aNm3337rfob3v5g4caI7MlPTrr4UAABZ75133nHfyQpeHTp0sLp167q+cpE89NBDlpCQYD169Agta9++vfsZtPQE1TyFtqC6J99//73lzp3bBb58+fLZ6aefbmXLlnWVQkRGsEOazJ4924Ut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",
+      "text/plain": [
+       "<Figure size 640x480 with 1 Axes>"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "plot_histogram(counts_list)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Let us make a list of the possible outcomes and add up all the counts of each state from each of the three circuits to obtain overall probabilities."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "outcomes = (\"00\", \"01\", \"10\", \"11\")\n",
+    "\n",
+    "# Here we convert \"None\"s into 0's so that we can sum.\n",
+    "\n",
+    "for i in range(0, len(qcs)):\n",
+    "    for j in range(0, len(outcomes)):\n",
+    "        if counts_list[i].get(outcomes[j]) is None:\n",
+    "            counts_list[i].update({outcomes[j]: 0})\n",
+    "\n",
+    "# Here we create a dictionary that holds all the outcomes and sums over their appearances\n",
+    "# in each of the circuits.\n",
+    "\n",
+    "total_counts = {}\n",
+    "for i in range(0, len(outcomes)):\n",
+    "    total_counts[outcomes[i]] = sum(\n",
+    "        counts_list[j].get(outcomes[i]) for j in range(0, len(qcs))\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now we can print out the total counts for each outcome, and plot the histogram."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{'00': 7462, '01': 7468, '10': 7575, '11': 7495}\n"
+     ]
+    },
+    {
+     "data": {
+      "image/png": "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R7AD7QW8vuBMi6X3o6In6alzxXSw69WrlwlxL774orRs2VJGjx4t69atk08//fRMPzUAAIBsi9lVsapWrVoyZcoU02vXpk0bWblypcycOVMqVqx4pp8aAABAtsV0j51q0qSJueHkdAi6d+/emYaiAdoLThWvL6C9eCPOycraWQAAAPheTA/FAgAA2IRgBwAAYAmCHQAAgCUIdgAAAJaI+VWxyB690saCBQtk8+bN5gzYl19+ueTPn5/DCMATS5YskT/++MNczUdfX2Ll5LOAVwh2yLLt27dL48aN5ZdffgmUnXXWWdK2bVt58skn5dJLL+VoAsiRQ4cOSevWrWXGjBmBsrx588oNN9xgrg50oisCAfj/GIpFlj3xxBNy8cUXy86dO+Xo0aOydOlSeeaZZ2TRokVSo0YNee655ziaCHjggQekadOmMn78eDl48GDYI3Ps2DGOGIxXXnlF0tPTzbWotV2kpaXJwIEDZcuWLXLttdfKPffcY153APXaa69JnTp1ZOjQoeZ67ScaZYo5eh47ICuKFi3qbNmyJVP5sWPHnGHDhjn58uVzRo4cycGEkZqa6lxzzTVOQkKCU7hwYadz587OzJkzTXtxDR8+3OnWrRtHDE7NmjWduXPnhj0Sn3/+uXPOOec4PXv25EjBaNmypVOrVi0nf/78Tt68eZ22bds6EydOdNLT0wNHaN68eU6jRo1i7ojRY4dsWbNmTaay+Ph4ue+++2TAgAEycuRIjigCVxIYN26cbNq0yfTmag9vw4YNpVy5ctKzZ09ZtWqVjB07Vho1asQRQ8TXF9WqVSt5//33eX1ByOtLv379ZOvWrTJ48GDTa9euXTs5//zz5cEHHzRzwceMGROTry8EO2TZHXfcIbfccot88803Ye+vUqUKRxMBRYsWNUOwJUuWlMcee0x+/vlnWb58uWlD+iat7WX16tXSrFkzjhrM68t//vMf82GA1xdk9fVFv+ow/Zw5c2TdunXmtWb27NlSu3ZtGTVqlHTq1CnmDiaXFEOW6fyX2267TT755BMz50VfiK+//nopVaqU/PXXX9KhQwdp3ry59OjRg6MKOXDggOnNDbdqWue9aC+v3vfOO+9wtKDTgswiiddff12qV68ud999t1k4kZqaKnv37pWuXbtKoUKFZMSIERwtmPmW+hoTadX0yy+/bBbiROqIsBnBDtn2xRdfmEnNc+fONS/GefLkMZOdNexNnTqV058gSypVqmSGSq666iqOGAK+//57eemll2TatGnmzTshIUHi4uKkYsWKpicmKSmJo4WTat26tRmavfPOO2PuaBHskGM6t2HhwoVmlWyFChWkbt265gUYOJn9+/dL9+7dZciQIRwshLVnzx754YcfzGiAjgrUr1/ffIgEsuL++++XV1991fTyxhqCHU5Ie+T0zVfnKuh57JKTk80LrM5b0B4XIKPRo0ebUxDoaSr0DVl7crW9VK1alYMFAFFGsMMJ6SeeN99808x3KVCggFnZ+PXXX8vu3btNN7fOj9LJ8YDS+U96bsMuXbpI4cKFzWIJneeiHwp0kYSuXitbtiwHC4a2DR1q1Q+LOh8TOJF58+aZ3v4mTZpIYiLXV4iEYIcT9tbp0vGvvvpKqlWrFig/cuSIfPrpp/Lss8/K4cOH5ccffyTcwbjoootMuAu+SoDOv5w8ebJpLxrwtL3oKU+Aq6++2rSH0qVLm17d22+/PdPq+mXLlplLjOkVbhDbWrRoIVOmTJHzzjvPrK7X9nLZZZeFbLN27Vr57rvvzH2xio9IiGjfvn3mjVgnLQfTeS4dO3Y0p6/Q4Ne/f3+OIozff/9dKleuHHI0tEdG35QXL15shmN79+7N0UJgHp2uWrz11lvlgw8+kEsuucS8UevK2L///ttso728v/76K0cMpr1MnDjRrJDWD4s1a9Y0HwR0sY1esUSNGjXKjCzFMoIdItLzA2nPSq9evUzvXUY6KVXPGbRixQqOIgw9TYWe7ibcZXz01Ca6YIL2guBrTaekpJiTm69fv96EPL3mtIZ/nZ+pw/cTJkyIyXORIXx70d7dPn36mF5cHZrVRXt6ahN9r9IToI8aNSqme+sUwQ4npAsnBg0aZCbAz5w5M1PA02EUJsXDpXMuP/zwQzPEpqe+yRjwaC8I9sgjj0jevHn/75tRfLx5Y9bFN7riXq9Ksm3bNjMNpEyZMhw4mHNfBp+3TkPdsGHDzMrpjz/+2EwNKl68uPmAGcuYY4eTWrRokblEiw6l6UIJvUSLro7VT0w6/27JkiVy4YUXciRh6IIJbS/z58835xzT9qKfpnWoZNKkSeY8ZXwYQFboAq2WLVvKXXfdxQFDloJfamqqPPnkkzF9tAh2yDJ9o9arTmjQ0zPB61yqp59+OuY/HSE8PcehDqPpucj0Oo76gqvDtNqbB5yMrn7Unjodoo10dQHApSez1jnfS5cuNcP4sYxgBwDwJV28xZUmQHvJHoIdAACAJVg8AQAAYAmCHQAAgCUIdgAAAJYg2AEAAFiCYAcAAGAJgh0AAIAlCHYAAACWINgBAABYgmAHAABgCYIdAACAJQh2AAAAYof/A+/4Wy/7MM/1AAAAAElFTkSuQmCC",
+      "text/plain": [
+       "<Figure size 640x480 with 1 Axes>"
+      ]
+     },
+     "execution_count": 14,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "print(total_counts)\n",
+    "plot_histogram(total_counts)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Check your understanding\n",
+    "\n",
+    "Is the above picture consistent with the outcomes predicted by hidden variables and determinism? Or is it consistent with probabilistic (and non-local) quantum mechanics?\n",
+    "\n",
+    "<details>\n",
+    "<summary>Answer</summary>\n",
+    "\n",
+    "\n",
+    "It is consistent with probabilistic and non-local quantum mechanics. The hidden variables treatment predicted that the probability of obtaining the same sign was less than or equal to 4/9. Quantum mechanics predicted a probability of 50%. The histogram above describes a probability of 00 or 11 equal to 49.97%. This is very close to the prediction of probabilistic quantum mechanics, but most importantly, it is greater than the allowed range in the hidden-variables treatment.\n",
+    "\n",
+    "\n",
+    "</details>\n",
+    "\n",
+    "\n",
+    "Does this prove anything about nature?\n",
+    "\n",
+    "<details>\n",
+    "<summary>Answer</summary>\n",
+    "\n",
+    "No! We were using a simulator! That is a computer programmed to behave according to the laws of probabilistic quantum mechanics. If we propose a rule, and then program a computer to follow that rule, its ability to follow the rule is not proof that the rule is correct! The only way to prove this is to use a real quantum computer!\n",
+    "\n",
+    "\n",
+    "</details>"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 2: Optimize your quantum circuit for running on real hardware\n",
+    "\n",
+    "Although we initially used a simulator to debug our code, we really want to run on real hardware. After all, a simulator is just pretending to be quantum mechanical, based on the equations above. If the simulator told us those equations were correct, that wouldn't do much to convince us. We want a real quantum computer to tell us what's happening! So we'll select the quantum computer we want to use. Sometimes it might be important to pick a specific device that has properties you want, but often we simply want to use whatever device is least busy.\n",
+    "\n",
+    "There is code below for saving your credentials upon first use. Be sure to delete this information from the notebook after saving it to your environment, so that your credentials are not accidentally shared when you share the notebook. See [Set up your IBM Cloud account](https://quantum.cloud.ibm.com/docs/guides/initialize-account) and [Initialize the service in an untrusted environment](https://quantum.cloud.ibm.com/docs/guides/cloud-setup-untrusted) for more guidance."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "InvalidAccountError",
+     "evalue": "'Unable to retrieve instances. Please check that you are using a valid API token.'",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[31m---------------------------------------------------------------------------\u001b[39m",
+      "\u001b[31mApiException\u001b[39m                              Traceback (most recent call last)",
+      "\u001b[36mFile \u001b[39m\u001b[32m~\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages\\qiskit_ibm_runtime\\accounts\\account.py:367\u001b[39m, in \u001b[36mCloudAccount.list_instances\u001b[39m\u001b[34m(self)\u001b[39m\n\u001b[32m    366\u001b[39m \u001b[38;5;28;01mtry\u001b[39;00m:\n\u001b[32m--> \u001b[39m\u001b[32m367\u001b[39m     result = \u001b[30;43mclient\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43msearch\u001b[39;49m\u001b[30;43m(\u001b[39;49m\n\u001b[32m    368\u001b[39m \u001b[30;43m        \u001b[39;49m\u001b[30;43mquery\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43m\"\u001b[39;49m\u001b[30;43mservice_name:quantum-computing\u001b[39;49m\u001b[30;43m\"\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    369\u001b[39m \u001b[30;43m        \u001b[39;49m\u001b[30;43mfields\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43m[\u001b[39;49m\n\u001b[32m    370\u001b[39m \u001b[30;43m            \u001b[39;49m\u001b[30;43m\"\u001b[39;49m\u001b[30;43mcrn\u001b[39;49m\u001b[30;43m\"\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    371\u001b[39m \u001b[30;43m            \u001b[39;49m\u001b[30;43m\"\u001b[39;49m\u001b[30;43mservice_plan_unique_id\u001b[39;49m\u001b[30;43m\"\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    372\u001b[39m \u001b[30;43m            \u001b[39;49m\u001b[30;43m\"\u001b[39;49m\u001b[30;43mname\u001b[39;49m\u001b[30;43m\"\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    373\u001b[39m \u001b[30;43m            \u001b[39;49m\u001b[30;43m\"\u001b[39;49m\u001b[30;43mdoc\u001b[39;49m\u001b[30;43m\"\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    374\u001b[39m \u001b[30;43m            \u001b[39;49m\u001b[30;43m\"\u001b[39;49m\u001b[30;43mtags\u001b[39;49m\u001b[30;43m\"\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    375\u001b[39m \u001b[30;43m        \u001b[39;49m\u001b[30;43m]\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    376\u001b[39m \u001b[30;43m        \u001b[39;49m\u001b[30;43msearch_cursor\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43msearch_cursor\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    377\u001b[39m \u001b[30;43m        \u001b[39;49m\u001b[30;43mlimit\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43m100\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    378\u001b[39m \u001b[30;43m        \u001b[39;49m\u001b[30;43mverify\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mself\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43mverify\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    379\u001b[39m \u001b[30;43m        \u001b[39;49m\u001b[30;43m*\u001b[39;49m\u001b[30;43m*\u001b[39;49m\u001b[30;43mproxies_kwargs\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    380\u001b[39m \u001b[30;43m    \u001b[39;49m\u001b[30;43m)\u001b[39;49m.get_result()\n\u001b[32m    381\u001b[39m \u001b[38;5;28;01mexcept\u001b[39;00m \u001b[38;5;167;01mException\u001b[39;00m \u001b[38;5;28;01mas\u001b[39;00m ex:\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages\\ibm_platform_services\\global_search_v2.py:228\u001b[39m, in \u001b[36mGlobalSearchV2.search\u001b[39m\u001b[34m(self, query, fields, search_cursor, x_request_id, x_correlation_id, account_id, limit, timeout, sort, is_deleted, is_reclaimed, impersonate_user, can_tag, is_project_resource, **kwargs)\u001b[39m\n\u001b[32m    227\u001b[39m url = \u001b[33m'\u001b[39m\u001b[33m/v3/resources/search\u001b[39m\u001b[33m'\u001b[39m\n\u001b[32m--> \u001b[39m\u001b[32m228\u001b[39m request = \u001b[30;43mself\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43mprepare_request\u001b[39;49m\u001b[30;43m(\u001b[39;49m\n\u001b[32m    229\u001b[39m \u001b[30;43m    \u001b[39;49m\u001b[30;43mmethod\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43m'\u001b[39;49m\u001b[30;43mPOST\u001b[39;49m\u001b[30;43m'\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    230\u001b[39m \u001b[30;43m    \u001b[39;49m\u001b[30;43murl\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43murl\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    231\u001b[39m \u001b[30;43m    \u001b[39;49m\u001b[30;43mheaders\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mheaders\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    232\u001b[39m \u001b[30;43m    \u001b[39;49m\u001b[30;43mparams\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mparams\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    233\u001b[39m \u001b[30;43m    \u001b[39;49m\u001b[30;43mdata\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mdata\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    234\u001b[39m \u001b[30;43m\u001b[39;49m\u001b[30;43m)\u001b[39;49m\n\u001b[32m    236\u001b[39m response = \u001b[38;5;28mself\u001b[39m.send(request, **kwargs)\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages\\ibm_cloud_sdk_core\\base_service.py:441\u001b[39m, in \u001b[36mBaseService.prepare_request\u001b[39m\u001b[34m(self, method, url, headers, params, data, files, **kwargs)\u001b[39m\n\u001b[32m    439\u001b[39m request[\u001b[33m'\u001b[39m\u001b[33mdata\u001b[39m\u001b[33m'\u001b[39m] = data\n\u001b[32m--> \u001b[39m\u001b[32m441\u001b[39m \u001b[30;43mself\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43mauthenticator\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43mauthenticate\u001b[39;49m\u001b[30;43m(\u001b[39;49m\u001b[30;43mrequest\u001b[39;49m\u001b[30;43m)\u001b[39;49m\n\u001b[32m    443\u001b[39m \u001b[38;5;66;03m# Compress the request body if applicable\u001b[39;00m\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages\\ibm_cloud_sdk_core\\authenticators\\iam_request_based_authenticator.py:64\u001b[39m, in \u001b[36mIAMRequestBasedAuthenticator.authenticate\u001b[39m\u001b[34m(self, req)\u001b[39m\n\u001b[32m     63\u001b[39m headers = req.get(\u001b[33m'\u001b[39m\u001b[33mheaders\u001b[39m\u001b[33m'\u001b[39m)\n\u001b[32m---> \u001b[39m\u001b[32m64\u001b[39m bearer_token = \u001b[30;43mself\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43mtoken_manager\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43mget_token\u001b[39;49m\u001b[30;43m(\u001b[39;49m\u001b[30;43m)\u001b[39;49m\n\u001b[32m     65\u001b[39m headers[\u001b[33m'\u001b[39m\u001b[33mAuthorization\u001b[39m\u001b[33m'\u001b[39m] = \u001b[33m'\u001b[39m\u001b[33mBearer \u001b[39m\u001b[38;5;132;01m{0}\u001b[39;00m\u001b[33m'\u001b[39m.format(bearer_token)\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages\\ibm_cloud_sdk_core\\token_managers\\token_manager.py:82\u001b[39m, in \u001b[36mTokenManager.get_token\u001b[39m\u001b[34m(self)\u001b[39m\n\u001b[32m     81\u001b[39m     logger.debug(\u001b[33m'\u001b[39m\u001b[33mPerforming synchronous token fetch\u001b[39m\u001b[33m'\u001b[39m)\n\u001b[32m---> \u001b[39m\u001b[32m82\u001b[39m     \u001b[30;43mself\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43mpaced_request_token\u001b[39;49m\u001b[30;43m(\u001b[39;49m\u001b[30;43m)\u001b[39;49m\n\u001b[32m     84\u001b[39m \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;28mself\u001b[39m._token_needs_refresh():\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages\\ibm_cloud_sdk_core\\token_managers\\token_manager.py:141\u001b[39m, in \u001b[36mTokenManager.paced_request_token\u001b[39m\u001b[34m(self)\u001b[39m\n\u001b[32m    140\u001b[39m \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;129;01mnot\u001b[39;00m request_active:\n\u001b[32m--> \u001b[39m\u001b[32m141\u001b[39m     token_response = \u001b[30;43mself\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43mrequest_token\u001b[39;49m\u001b[30;43m(\u001b[39;49m\u001b[30;43m)\u001b[39;49m\n\u001b[32m    142\u001b[39m     \u001b[38;5;28mself\u001b[39m._save_token_info(token_response)\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages\\ibm_cloud_sdk_core\\token_managers\\iam_request_based_token_manager.py:127\u001b[39m, in \u001b[36mIAMRequestBasedTokenManager.request_token\u001b[39m\u001b[34m(self)\u001b[39m\n\u001b[32m    126\u001b[39m logger.debug(\u001b[33m'\u001b[39m\u001b[33mInvoking IAM get_token operation: \u001b[39m\u001b[38;5;132;01m%s\u001b[39;00m\u001b[33m'\u001b[39m, request_url)\n\u001b[32m--> \u001b[39m\u001b[32m127\u001b[39m response = \u001b[30;43mself\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43m_request\u001b[39;49m\u001b[30;43m(\u001b[39;49m\n\u001b[32m    128\u001b[39m \u001b[30;43m    \u001b[39;49m\u001b[30;43mmethod\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43m'\u001b[39;49m\u001b[30;43mPOST\u001b[39;49m\u001b[30;43m'\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    129\u001b[39m \u001b[30;43m    \u001b[39;49m\u001b[30;43murl\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mrequest_url\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    130\u001b[39m \u001b[30;43m    \u001b[39;49m\u001b[30;43mheaders\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mrequest_headers\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    131\u001b[39m \u001b[30;43m    \u001b[39;49m\u001b[30;43mdata\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mdata\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    132\u001b[39m \u001b[30;43m    \u001b[39;49m\u001b[30;43mauth_tuple\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mauth_tuple\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    133\u001b[39m \u001b[30;43m    \u001b[39;49m\u001b[30;43mproxies\u001b[39;49m\u001b[30;43m=\u001b[39;49m\u001b[30;43mself\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43mproxies\u001b[39;49m\u001b[30;43m,\u001b[39;49m\n\u001b[32m    134\u001b[39m \u001b[30;43m\u001b[39;49m\u001b[30;43m)\u001b[39;49m\n\u001b[32m    135\u001b[39m logger.debug(\u001b[33m'\u001b[39m\u001b[33mReturned from IAM get_token operation\u001b[39m\u001b[33m'\u001b[39m)\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages\\ibm_cloud_sdk_core\\token_managers\\jwt_token_manager.py:93\u001b[39m, in \u001b[36mJWTTokenManager._request\u001b[39m\u001b[34m(self, method, url, headers, params, data, auth_tuple, **kwargs)\u001b[39m\n\u001b[32m     91\u001b[39m     \u001b[38;5;28;01mreturn\u001b[39;00m response.json()\n\u001b[32m---> \u001b[39m\u001b[32m93\u001b[39m \u001b[38;5;28;01mraise\u001b[39;00m ApiException(response.status_code, http_response=response)\n",
+      "\u001b[31mApiException\u001b[39m: Error: Provided API key could not be found., Status code: 400",
+      "\nThe above exception was the direct cause of the following exception:\n",
+      "\u001b[31mInvalidAccountError\u001b[39m                       Traceback (most recent call last)",
+      "\u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[15]\u001b[39m\u001b[32m, line 6\u001b[39m\n\u001b[32m      2\u001b[39m \n\u001b[32m      3\u001b[39m \u001b[38;5;66;03m# Syntax for first saving your token. Delete these lines after saving your credentials.\u001b[39;00m\n\u001b[32m      4\u001b[39m QiskitRuntimeService.save_account(channel='ibm_quantum_platform',\n\u001b[32m      5\u001b[39m instance = 'crn:v1:bluemix:public:quantum-computing:us-east:a/00b3915f8e7243f7a01812846e4b3fa3:c5c6654f-1782-4b1a-9ec3-6b7cea9475b3::', token='crn:v1:bluemix:public:quantum-computing:us-east:a/00b3915f8e7243f7a01812846e4b3fa3:c5c6654f-1782-4b1a-9ec3-6b7cea9475b3::', overwrite=True, set_as_default=True)\n\u001b[32m----> \u001b[39m\u001b[32m6\u001b[39m service = QiskitRuntimeService(channel=\u001b[33m'ibm_quantum_platform'\u001b[39m)\n\u001b[32m      7\u001b[39m \n\u001b[32m      8\u001b[39m \u001b[38;5;66;03m# Load saved credentials\u001b[39;00m\n\u001b[32m      9\u001b[39m service = QiskitRuntimeService()\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages\\qiskit_ibm_runtime\\qiskit_runtime_service.py:272\u001b[39m, in \u001b[36mQiskitRuntimeService.__init__\u001b[39m\u001b[34m(self, channel, token, url, filename, name, instance, proxies, verify, private_endpoint, url_resolver, region, plans_preference, tags)\u001b[39m\n\u001b[32m    270\u001b[39m \u001b[38;5;28mself\u001b[39m._tags = tags \u001b[38;5;129;01mor\u001b[39;00m \u001b[38;5;28mself\u001b[39m._account.tags\n\u001b[32m    271\u001b[39m \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;28mself\u001b[39m._account.instance:\n\u001b[32m--> \u001b[39m\u001b[32m272\u001b[39m     \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;28mself\u001b[39m._account.instance \u001b[38;5;129;01mnot\u001b[39;00m \u001b[38;5;129;01min\u001b[39;00m [inst[\u001b[33m\"\u001b[39m\u001b[33mcrn\u001b[39m\u001b[33m\"\u001b[39m] \u001b[38;5;28;01mfor\u001b[39;00m inst \u001b[38;5;129;01min\u001b[39;00m \u001b[30;43mself\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43minstances\u001b[39;49m\u001b[30;43m(\u001b[39;49m\u001b[30;43m)\u001b[39;49m]:\n\u001b[32m    273\u001b[39m         \u001b[38;5;28;01mraise\u001b[39;00m IBMInputValueError(\n\u001b[32m    274\u001b[39m             \u001b[33m\"\u001b[39m\u001b[33mThe given API token is associated with an account that does not have access \u001b[39m\u001b[33m\"\u001b[39m\n\u001b[32m    275\u001b[39m             \u001b[33mf\u001b[39m\u001b[33m\"\u001b[39m\u001b[33mto the instance \u001b[39m\u001b[38;5;132;01m{\u001b[39;00m\u001b[38;5;28mself\u001b[39m._account.instance\u001b[38;5;132;01m}\u001b[39;00m\u001b[33m. \u001b[39m\u001b[33m\"\u001b[39m\n\u001b[32m    276\u001b[39m             \u001b[33m\"\u001b[39m\u001b[33mTo use this instance, use an API token generated from the account \u001b[39m\u001b[33m\"\u001b[39m\n\u001b[32m    277\u001b[39m             \u001b[33m\"\u001b[39m\u001b[33mwith this instance available.\u001b[39m\u001b[33m\"\u001b[39m\n\u001b[32m    278\u001b[39m         )\n\u001b[32m    279\u001b[39m     \u001b[38;5;28mself\u001b[39m._default_instance = \u001b[38;5;28;01mTrue\u001b[39;00m\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages\\qiskit_ibm_runtime\\qiskit_runtime_service.py:1481\u001b[39m, in \u001b[36mQiskitRuntimeService.instances\u001b[39m\u001b[34m(self)\u001b[39m\n\u001b[32m   1472\u001b[39m \u001b[38;5;250m\u001b[39m\u001b[33;03m\"\"\"Return a list of instances available for the active account.\u001b[39;00m\n\u001b[32m   1473\u001b[39m \n\u001b[32m   1474\u001b[39m \u001b[33;03mReturn a list that contains a series of dictionaries with the following instance\u001b[39;00m\n\u001b[32m   (...)\u001b[39m\u001b[32m   1478\u001b[39m \u001b[33;03m    A list with instances available for the active account.\u001b[39;00m\n\u001b[32m   1479\u001b[39m \u001b[33;03m\"\"\"\u001b[39;00m\n\u001b[32m   1480\u001b[39m \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;129;01mnot\u001b[39;00m \u001b[38;5;28mself\u001b[39m._all_instances:\n\u001b[32m-> \u001b[39m\u001b[32m1481\u001b[39m     \u001b[38;5;28mself\u001b[39m._all_instances = \u001b[30;43mself\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43m_account\u001b[39;49m\u001b[30;43m.\u001b[39;49m\u001b[30;43mlist_instances\u001b[39;49m\u001b[30;43m(\u001b[39;49m\u001b[30;43m)\u001b[39;49m\n\u001b[32m   1482\u001b[39m \u001b[38;5;28;01mreturn\u001b[39;00m \u001b[38;5;28mself\u001b[39m._all_instances\n",
+      "\u001b[36mFile \u001b[39m\u001b[32m~\\miniconda3\\envs\\qiskit-fallfest\\Lib\\site-packages\\qiskit_ibm_runtime\\accounts\\account.py:382\u001b[39m, in \u001b[36mCloudAccount.list_instances\u001b[39m\u001b[34m(self)\u001b[39m\n\u001b[32m    367\u001b[39m     result = client.search(\n\u001b[32m    368\u001b[39m         query=\u001b[33m\"\u001b[39m\u001b[33mservice_name:quantum-computing\u001b[39m\u001b[33m\"\u001b[39m,\n\u001b[32m    369\u001b[39m         fields=[\n\u001b[32m   (...)\u001b[39m\u001b[32m    379\u001b[39m         **proxies_kwargs,\n\u001b[32m    380\u001b[39m     ).get_result()\n\u001b[32m    381\u001b[39m \u001b[38;5;28;01mexcept\u001b[39;00m \u001b[38;5;167;01mException\u001b[39;00m \u001b[38;5;28;01mas\u001b[39;00m ex:\n\u001b[32m--> \u001b[39m\u001b[32m382\u001b[39m     \u001b[38;5;28;01mraise\u001b[39;00m InvalidAccountError(\n\u001b[32m    383\u001b[39m         \u001b[33m\"\u001b[39m\u001b[33mUnable to retrieve instances. \u001b[39m\u001b[33m\"\u001b[39m\n\u001b[32m    384\u001b[39m         \u001b[33m\"\u001b[39m\u001b[33mPlease check that you are using a valid API token.\u001b[39m\u001b[33m\"\u001b[39m\n\u001b[32m    385\u001b[39m     ) \u001b[38;5;28;01mfrom\u001b[39;00m\u001b[38;5;250m \u001b[39m\u001b[34;01mex\u001b[39;00m\n\u001b[32m    386\u001b[39m crns = []\n\u001b[32m    387\u001b[39m items = result.get(\u001b[33m\"\u001b[39m\u001b[33mitems\u001b[39m\u001b[33m\"\u001b[39m, [])\n",
+      "\u001b[31mInvalidAccountError\u001b[39m: 'Unable to retrieve instances. Please check that you are using a valid API token.'"
+     ]
+    }
+   ],
+   "source": [
+    "from qiskit_ibm_runtime import QiskitRuntimeService\n",
+    "\n",
+    "# Syntax for first saving your token. Delete these lines after saving your credentials.\n",
+    "QiskitRuntimeService.save_account(channel='ibm_quantum_platform',\n",
+    "instance = 'crn:v1:bluemix:public:quantum-computing:us-east:a/00b3915f8e7243f7a01812846e4b3fa3:c5c6654f-1782-4b1a-9ec3-6b7cea9475b3::', token='crn:v1:bluemix:public:quantum-computing:us-east:a/00b3915f8e7243f7a01812846e4b3fa3:c5c6654f-1782-4b1a-9ec3-6b7cea9475b3::', overwrite=True, set_as_default=True)\n",
+    "service = QiskitRuntimeService(channel='ibm_quantum_platform')\n",
+    "\n",
+    "# Load saved credentials\n",
+    "service = QiskitRuntimeService()\n",
+    "\n",
+    "backend = service.least_busy(operational=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager\n",
+    "\n",
+    "target = backend.target\n",
+    "pm = generate_preset_pass_manager(target=target, optimization_level=3)\n",
+    "\n",
+    "qcs_isa = qcs\n",
+    "\n",
+    "for i in range(0, len(qcs)):\n",
+    "    qcs_isa[i] = pm.run(qcs[i])\n",
+    "    qcs_isa[i].draw(output=\"mpl\", idle_wires=False, style=\"iqp\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "qcs_isa[2].draw(output=\"mpl\", idle_wires=False, style=\"iqp\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 3: Execute your job on IBM quantum computers using Runtime primitives\n",
+    "\n",
+    "Now that we have optimized our circuits to run on real quantum hardware, and debugged our code using simulators, we are ready to gather statistics from a real quantum computer, and settle the disagreement between Einstein and Born."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from qiskit_ibm_runtime import SamplerV2 as Sampler\n",
+    "# from qiskit_ibm_runtime import Session\n",
+    "# sampler.options.default_shots = 1000\n",
+    "\n",
+    "# Start a job that will return shots for all 100 parameter value sets.\n",
+    "# The best practice is to use a session as shown below. This is available to Premium Plan, Flex\n",
+    "# Plan, and On-Prem (IBM Quantum Platform API) Plan users.\n",
+    "# result_list = [None] * len(qcs)\n",
+    "# real_counts_list = [None] * len(qcs)\n",
+    "# with Session(backend=backend) as session:\n",
+    "#    sampler = Sampler(mode=session)\n",
+    "\n",
+    "#    for i in range(0, len(qcs)):\n",
+    "#        # Define the primitive unified bloc (pub)\n",
+    "#        pub = qcs[i]\n",
+    "#        job = sampler.run([pub], shots=10000)\n",
+    "#        # Extract the result for the 0th pub (this example only has one pub).\n",
+    "#        result_list[i] = job.result()\n",
+    "#        data_pub = result_list[i][0].data\n",
+    "#        counts = data_pub.c.get_counts()\n",
+    "#        real_counts_list[i] = counts\n",
+    "#    #   plot_histogram(counts)\n",
+    "\n",
+    "# Open users can still carry out this experiment, but without reserving a session of use, meaning\n",
+    "# repeated queuing is possible.\n",
+    "from qiskit_ibm_runtime import Batch\n",
+    "\n",
+    "batch = Batch(backend=backend)\n",
+    "sampler = Sampler(mode=batch)\n",
+    "\n",
+    "result_list = [None] * len(qcs)\n",
+    "real_counts_list = [None] * len(qcs)\n",
+    "\n",
+    "for i in range(0, len(qcs)):\n",
+    "    # Define the primitive unified bloc (pub)\n",
+    "    pub = qcs[i]\n",
+    "    job = sampler.run([pub], shots=10000)\n",
+    "    # Extract the result for the 0th pub (this example only has one pub).\n",
+    "    result_list[i] = job.result()\n",
+    "    data_pub = result_list[i][0].data\n",
+    "    counts = data_pub.c.get_counts()\n",
+    "    real_counts_list[i] = counts\n",
+    "\n",
+    "# Close the batch because no context manager was used.\n",
+    "batch.close()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "outcomes = (\"00\", \"01\", \"10\", \"11\")\n",
+    "\n",
+    "# Here we convert \"None\"s into 0's so that we can sum.\n",
+    "\n",
+    "for i in range(0, len(qcs)):\n",
+    "    for j in range(0, len(outcomes)):\n",
+    "        if real_counts_list[i].get(outcomes[j]) is None:\n",
+    "            real_counts_list[i].update({outcomes[j]: 0})\n",
+    "\n",
+    "# Here we create a dictionary that holds all the outcomes and sums over their appearances\n",
+    "# in each of the circuits.\n",
+    "\n",
+    "real_total_counts = {}\n",
+    "for i in range(0, len(outcomes)):\n",
+    "    real_total_counts[outcomes[i]] = sum(\n",
+    "        real_counts_list[j].get(outcomes[i]) for j in range(0, len(qcs))\n",
+    "    )\n",
+    "\n",
+    "print(real_total_counts)\n",
+    "plot_histogram(real_total_counts)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# This syntax allows you to run the job on a simulator, in case you have exhausted your allotted\n",
+    "# time on real IBM quantum computers.\n",
+    "# But we strongly advise running this on real quantum computers, since this is meant to be a check\n",
+    "# of the behavior of real quantum systems.\n",
+    "\n",
+    "# This uses a local simulator\n",
+    "# from qiskit_aer import AerSimulator\n",
+    "\n",
+    "# This generates a simulator that mimics the real quantum system\n",
+    "# backend_sim = AerSimulator.from_backend(backend)\n",
+    "\n",
+    "# Import an estimator, this time from qiskit (we import from Runtime for real hardware)\n",
+    "# from qiskit.primitives import BackendSamplerV2\n",
+    "# sampler = BackendSamplerV2(backend = backend_sim)\n",
+    "\n",
+    "# result_list = [None] * len(qcs)\n",
+    "# counts_list = [None] * len(qcs)\n",
+    "# for i in range(0, len(qcs)):\n",
+    "# Define the primitive unified bloc (pub)\n",
+    "#    pub = qcs[i]\n",
+    "#    job = sampler.run([pub], shots=10000)\n",
+    "# Extract the result for the 0th pub (this example only has one pub).\n",
+    "#    result_list[i] = job.result()\n",
+    "#    data_pub = result_list[i][0].data\n",
+    "#    counts = data_pub.c.get_counts()\n",
+    "#    counts_list[i] = counts\n",
+    "\n",
+    "# data_pubs = (result_list[0][0].data,result_list[1][0].data,result_list[2][0].data)\n",
+    "# outcomes = (\"00\", \"01\", \"10\", \"11\")\n",
+    "\n",
+    "# Here we convert \"None\"s into 0's so that we can sum.\n",
+    "\n",
+    "# for i in range(0, len(qcs)):\n",
+    "#    for j in range(0, len(outcomes)):\n",
+    "#        if counts_list[i].get(outcomes[j]) is None:\n",
+    "#            counts_list[i].update({outcomes[j]: 0})\n",
+    "\n",
+    "# Here we create a dictionary that holds all the outcomes and sums over their appearances\n",
+    "# in each of the circuits.\n",
+    "\n",
+    "# total_counts = {}\n",
+    "# for i in range(0, len(outcomes)):\n",
+    "#    total_counts[outcomes[i]] = sum(\n",
+    "#        counts_list[j].get(outcomes[i]) for j in range(0, len(qcs))\n",
+    "#    )\n",
+    "\n",
+    "# print(total_counts)\n",
+    "# plot_histogram(total_counts)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "counts_list"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 4: Post-process and analysis\n",
+    "\n",
+    "Let’s take a step back and recap: Using a hidden-variables treatment, and the 3 offset axes, we obtained a constraint on the probability for the measurements to yield the same sign $P_{same,hv} =4/9$. Then we assumed probability distributions as in quantum mechanics and obtained a __different value__ for that probability: $P_{same,gm} = 1/2$. The prediction from quantum mechanics is higher than that allowed by the hidden variables treatment. So it can be experimentally known whether quantum mechanical states are determined by nature prior to measurement, or if they are truly in a probabilistic superposition of possible states.\n",
+    "\n",
+    "We engineered our quantum circuits such that there are four possible outcomes corresponding to Lucas and Rihanna measuring one sign of the spin projection or the other: 00, 01, 10, and 11. In the cases of 00 and 11, Lucas and Rihanna measure the same sign, and in the cases of 01 and 10, they measure opposite signs. We see that to a very good approximation, the chance of Lucas and Rihanna getting the same sign are about 50%, definitely greater than $4/9$. This means that there is no set of hidden variables that can account for that distribution of probabilities, and the hidden-variables treatment is not compatible with experiment.\n",
+    "\n",
+    "There are different interpretations of quantum mechanical experimental results, and there are many subtleties to experimental setups that are revisited every so often. But so far the principles of quantum mechanics and the probabilistic interpretation of quantum states have accurately described the results. Max Born seems to have been correct.\n",
+    "\n",
+    "Let's take just one more moment to reflect on the significance of this. Two particles emerge from a decay event, and the two particles travel in different directions, possibly for a long time. Their spins are not in any well-defined state, and they carry no hidden-variable instructions with them to determine the outcomes of future measurements. But a measurement of one (along, say $+z$) necessarily determines the outcome of an experiment on the other particle's spin along the $z$ direction (it must be $-z$). This means that something about the physics of one particle is determined by what is done to the other particle, possibly far away. This is one situation that has led people to refer to reality as being \"non-local\".\n",
+    "\n",
+    "Two particles like those we've been describing are somehow \"connected\" in the sense that measurements on one can influence the other. We refer to such particles as being \"entangled\". Entanglement is more than just correlations. For example, we could construct a classical machine that spits out a magnet to one side with its north end up and a magnet to the other side with its north end down. Such magnets could be perfectly anti-correlated. But a measurement of one would do nothing to the other. In quantum mechanical entanglement, particle A could be in an undefined state (or a mixture of many states), and we can pin it down to a defined state through measurements on a totally different particle (say, B). Nothing like that exists in the classical world.\n",
+    "\n",
+    "This often brings up a whole new world of questions and possibilities. Some of the ideas it conjures are real, like using entanglement to compute, as in quantum computers! Some are deceptively appealing, but turn out to fail, like trying to use entanglement to send information faster than light. We encourage you ask all the questions occurring to you, and read about how others have investigated these phenomena. There is a whole world of quantum mechanics out there to explore, but here are just a few resources you might check out:\n",
+    "\n",
+    "IBM Quantum courses:\n",
+    "- [Quantum computing in practice](https://quantum.cloud.ibm.com/learning/courses/quantum-computing-in-practice)\n",
+    "- [Basics of quantum information](https://quantum.cloud.ibm.com/learning/courses/basics-of-quantum-information)\n",
+    "\n",
+    "Interesting quantum mechanics papers:\n",
+    "- [Einstein Podolsky and Rosen paradox](https://cds.cern.ch/record/405662/files/PhysRev.47.777.pdf)\n",
+    "- [John Bell's original paper from 1964](https://cds.cern.ch/record/111654/files/vol1p195-200_001.pdf)\n",
+    "- [2019 paper on catching and reversing a \"quantum jump\" mid-transition](https://www.nature.com/articles/s41586-019-1287-z)\n",
+    "\n",
+    "Some quantum mechanics instructional resources:\n",
+    "- [Quantum I course materials](https://www.colorado.edu/sei/departments/physics/activities/courses/quantum-i-course-materials) from the University of Colorado.\n",
+    "\n",
+    "Some quantum mechanics educational research:\n",
+    "- [Review of student difficulties in upper-level quantum mechanics](https://journals.aps.org/prper/pdf/10.1103/PhysRevSTPER.11.020117) by C. Singh and E. Marshman"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Questions\n",
+    "\n",
+    "### Critical concepts\n",
+    "\n",
+    "- Hidden variables and therefore local realism are not consistent with observations of quantum mechanics.\n",
+    "- Quantum mechanics is probabilistic.\n",
+    "- Entanglement is real and observable; it is not just correlations.\n",
+    "- We can map real world scenarios to quantum computers."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### T/F Questions"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**1.** Albert Einstein argued that quantum mechanics was incomplete, as a theory, because it only described probabilities of outcomes, and not the underlying mechanism that determined those outcomes."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = True  # Replace with True or False\n",
+    "grade_bell_ex1(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**2.** \"Hidden variables\" refers to the idea that two quantum mechanical particles can be entangled."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = True  # Replace with True or False\n",
+    "grade_bell_ex2(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**3.** Any two correlated systems are quantum mechanically entangled."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = True  # Replace with True or False\n",
+    "grade_bell_ex3(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**4.** Quantum mechanical entanglement is important for getting math right, but you can't see it in an experiment."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = True  # Replace with True or False\n",
+    "grade_bell_ex4(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**5.** In most cases, quantum mechanics can't tell you an exact outcome of an experiment, only the probabilities that certain outcomes will be measured."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = True  # Replace with True or False\n",
+    "grade_bell_ex5(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**6.** In quantum mechanics, under certain conditions, the state of particle A can be affected by the state of particle B, even if particles A and B are not in contact and do not exchange any particles."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = True  # Replace with True or False\n",
+    "grade_bell_ex6(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**7.** We can map real world experiments onto quantum circuits."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = True  # Replace with True or False\n",
+    "grade_bell_ex7(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Multiple Choice Questions"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**1.** Suppose a spin-0 particle decays into two spin-1/2 particles A and B. A measurement is made on particle A that reveals its spin has a projection along $+z$. Particle B now:\n",
+    "\n",
+    "- a. definitely has a spin projection along $-z$\n",
+    "- b. definitely has a spin projection along $-x$\n",
+    "- c. definitely has a spin projection along $-y$\n",
+    "- d. definitely has a negative spin projection along any axis measured."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = \"a\"  # Replace with your answer: \"a\", \"b\", \"c\", or \"d\"\n",
+    "grade_bell_ex8(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**2.** A spin-0 particle decays into two spin-1/2 particles A and B. If particle A is measured to have a projection along $+z$, which of the following projections are possible for a measurement of particle B? Select all that apply.\n",
+    "\n",
+    "- a. $+x$\n",
+    "- b. $-x$\n",
+    "- c. $+y$\n",
+    "- d. $-y$\n",
+    "- e. $+z$\n",
+    "- f. $-z$"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = [\"a\"]  # Replace with a list of your answers, e.g. [\"a\", \"b\", \"c\"]\n",
+    "grade_bell_ex9(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**3.** Suppose a spin-0 particle decays into two spin-1/2 particles A and B. What best describes the state of particle A prior to any measurement?\n",
+    "\n",
+    "- a. The spin of particle A is along $+z$.\n",
+    "- b. The spin of particle A is along $-z$.\n",
+    "- c. The spin of particle A is along $+x$.\n",
+    "- d. The spin of particle A is defined along some directions, but not others.\n",
+    "- e. The spin orientation of particle A is undetermined by nature prior to any measurements."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = \"a\"  # Replace with your answer: \"a\", \"b\", \"c\", \"d\", or \"e\"\n",
+    "grade_bell_ex10(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**4.** Which of the following is/are true of the Hadamard gate? Select all that apply.\n",
+    "\n",
+    "- a. $H|0\\rangle = \\frac{1}{\\sqrt{2}}(|0\\rangle+|1\\rangle)$\n",
+    "- b. $H|0\\rangle = \\frac{1}{\\sqrt{2}}(|0\\rangle-|1\\rangle)$\n",
+    "- c. $H \\frac{1}{\\sqrt{2}}(|0\\rangle-|1\\rangle)=|0\\rangle$\n",
+    "- d. $H \\frac{1}{\\sqrt{2}}(|0\\rangle+|1\\rangle)=|0\\rangle$"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = [\"a\", \"b\"]  # Replace with a list of your answers, e.g. [\"a\", \"d\"]\n",
+    "grade_bell_ex11(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**5.** Which of the following is/are true of the X gate? Select all that apply.\n",
+    "\n",
+    "- a. $X|0\\rangle = |1\\rangle$\n",
+    "- b. $X|0\\rangle = \\frac{1}{\\sqrt{2}}(|0\\rangle-|1\\rangle)$\n",
+    "- c. $X|0\\rangle = -|0\\rangle$\n",
+    "- d. $X|1\\rangle = |0\\rangle$\n",
+    "- e. $X\\frac{1}{\\sqrt{2}}(|0\\rangle-|1\\rangle)=X\\frac{1}{\\sqrt{2}}(|1\\rangle-|0\\rangle)$"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = [\"a\", \"b\"]  # Replace with a list of your answers, e.g. [\"a\", \"c\"]\n",
+    "grade_bell_ex12(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**6.** Which of the following is a two-qubit gate?\n",
+    "\n",
+    "- a. X\n",
+    "- b. $R_y(\\theta)$\n",
+    "- c. H\n",
+    "- d. CNOT"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = \"a\"  # Replace with your answer: \"a\", \"b\", \"c\", or \"d\"\n",
+    "grade_bell_ex13(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**7.** Suppose a qubit is in the $|0\\rangle$ state. What is the probability of measuring it to be in the $|1\\rangle$ state?\n",
+    "\n",
+    "- a. Exactly 100% on a noise-free simulator, near 100% on a real quantum computer\n",
+    "- b. Near 100% on a noise-free simulator, exactly 100% on a real quantum computer\n",
+    "- c. Exactly 0% on a noise-free simulator, near 0% on a real quantum computer\n",
+    "- d. Near 0% on a noise-free simulator, exactly 0% on a real quantum computer"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = \"a\"  # Replace with your answer: \"a\", \"b\", \"c\", or \"d\"\n",
+    "grade_bell_ex14(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Discussion Questions"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**1.** Friends A, B, and C are discussing results from this lab related to Bell's Inequality. Friend A says the results mean they didn't know the spin states prior to measurement. Friend B says it means the spins are not already pointing in a particular direction prior to measurement. Friend C says it means the future spin state wasn't even decided by nature prior to measurement. With whom do you agree, and why?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = \"\"\"Type your answer here\"\"\"\n",
+    "grade_bell_ex15(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**2.** Explain how quantum mechanical phenomena like entanglement indicate that reality is non-local."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = \"\"\"Type your answer here\"\"\"\n",
+    "grade_bell_ex16(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**3.** What additional experiments would you like to do to convince yourself of the results obtained here?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = \"\"\"Type your answer here\"\"\"\n",
+    "grade_bell_ex17(answer)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "**4.** Could Bell's inequality only be explored with 3 equally-spaced axes $a$, $b$, and $c$? Could it be done with any other number of axes? What would this look like?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Grading your answer. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "answer = \"\"\"Type your answer here\"\"\"\n",
+    "grade_bell_ex18(answer)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Fetching your progress. Please wait...\n",
+      "\n",
+      "Failed: 'Unable to retrieve instances. Please check that you are using a valid API token.'\n"
+     ]
+    }
+   ],
+   "source": [
+    "check_progress(\"bell\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "in_page_toc_max_heading_level": 2,
+  "in_page_toc_min_heading_level": 2,
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.17"
+  },
+  "widgets": {
+   "application/vnd.jupyter.widget-state+json": {
+    "state": {},
+    "version_major": 2,
+    "version_minor": 0
+   }
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
